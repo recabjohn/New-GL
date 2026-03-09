@@ -1,0 +1,412 @@
+import { useState } from 'react'
+import Card from '../../ui/Card'
+import Select from '../../ui/Select'
+import Toggle from '../../ui/Toggle'
+import Input from '../../ui/Input'
+import { deductibleOptions, usStates } from '../../../data/mockData'
+import { ChevronDown, ChevronUp, Plus, Trash2, AlertTriangle } from 'lucide-react'
+
+const occurrenceLimits = ['100,000 CSL', '200,000 CSL', '300,000 CSL', '500,000 CSL', '1,000,000 CSL']
+const aggLimits        = ['200,000 CSL', '400,000 CSL', '600,000 CSL', '1,000,000 CSL', '2,000,000 CSL']
+const medPayLimits     = ['5,000', '10,000', '25,000', '50,000', 'Excluded']
+const coverageForms    = ['Occurrence', 'Claims-Made']
+const lossControlOpts  = ['Not Applicable', 'Required - Pre-Bind', 'Required - Post-Bind', 'Recommended']
+const sublineOptions   = [
+  'Premises/Operations and Products/Completed Operations',
+  'Premises/Operations',
+  'Products/Completed Operations',
+  'Liquor',
+  'Owners and Contractors',
+  'Railroad',
+]
+const ADDITIONAL_COVERAGES_CATALOG = [
+  'Primary And Noncontributory - Other Insurance Condition',
+  'Waiver of Transfer of Rights',
+  'Additional Insured – Owners, Lessees or Contractors',
+  'Additional Insured – Completed Operations',
+  'Blanket Additional Insured',
+]
+
+function SectionRule({ color, children }) {
+  return (
+    <div className="flex items-center gap-2 mb-3">
+      <div className={`w-0.5 h-4 rounded-full ${color}`} />
+      <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{children}</span>
+    </div>
+  )
+}
+
+function CollapsibleSection({ title, badge, children, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div className="rounded-xl border border-stone-200 bg-white overflow-hidden shadow-card">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-5 py-3.5 text-left hover:bg-stone-25 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-stone-800">{title}</span>
+          {badge != null && badge > 0 && (
+            <span className="text-[10px] font-bold bg-flame-100 text-flame-700 px-1.5 py-0.5 rounded-full">{badge} on</span>
+          )}
+        </div>
+        {open
+          ? <ChevronUp className="h-4 w-4 text-stone-400" />
+          : <ChevronDown className="h-4 w-4 text-stone-400" />
+        }
+      </button>
+      {open && <div className="px-5 pb-5 border-t border-stone-100">{children}</div>}
+    </div>
+  )
+}
+
+// Stepper — typable number input with +/- buttons for violation/recall counts
+function CountStepper({ label, value = 0, onChange, warn }) {
+  const v = Number(value) || 0
+  return (
+    <div>
+      <label className="form-label mb-1.5">{label}</label>
+      <div className={[
+        'flex items-center rounded-lg border overflow-hidden',
+        warn && v > 0 ? 'border-amber-300 bg-amber-50' : 'border-stone-200 bg-stone-50',
+      ].join(' ')}>
+        <button
+          type="button"
+          onClick={() => onChange(Math.max(0, v - 1))}
+          className="px-3 py-2 text-stone-500 hover:bg-stone-100 transition-colors text-sm font-bold select-none"
+        >−</button>
+        <input
+          type="number"
+          min={0}
+          value={v}
+          onChange={e => onChange(Math.max(0, parseInt(e.target.value, 10) || 0))}
+          className={`flex-1 text-center text-sm font-mono font-semibold bg-transparent border-0 focus:outline-none focus:ring-0 py-2 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${warn && v > 0 ? 'text-amber-700' : 'text-stone-800'}`}
+        />
+        <button
+          type="button"
+          onClick={() => onChange(v + 1)}
+          className="px-3 py-2 text-stone-500 hover:bg-stone-100 transition-colors text-sm font-bold select-none"
+        >+</button>
+      </div>
+      {warn && v > 0 && (
+        <p className="flex items-center gap-1 mt-1 text-xs text-amber-600">
+          <AlertTriangle className="h-3 w-3 shrink-0" /> Review required
+        </p>
+      )}
+    </div>
+  )
+}
+
+export default function Step2_RiskCoverage({ data, onChange }) {
+  const set = (k, v) => onChange({ ...data, [k]: v })
+  const [newCoverage, setNewCoverage] = useState('')
+
+  const activeFlagCount = [
+    'governmentalSubdivision', 'limitedProductWithdrawal', 'sizeOfRiskRating',
+    'stopGapCoverage', 'medPayExclusion', 'cyberIncidentLiability',
+    'lossOfElectronicData', 'experienceRating', 'scheduleRating',
+    'acceptTerrorismCoverage', 'compositeRating', 'limitedCoverageUnmannedAircraft',
+    'tripTerminatesEarly', 'ndPesticideApplicator',
+  ].filter(k => !!data[k]).length
+
+  const addCoverage = () => {
+    if (!newCoverage) return
+    const next = [...(data.additionalCoverages || []), { id: Date.now(), name: newCoverage }]
+    set('additionalCoverages', next)
+    setNewCoverage('')
+  }
+  const removeCoverage = (id) => {
+    set('additionalCoverages', (data.additionalCoverages || []).filter(c => c.id !== id))
+  }
+
+  const totalViolations = (data.oshaViolations || 0) + (data.repeatedViolations || 0) + (data.willfulViolations || 0)
+
+  // Subline-driven field visibility (Liquor/OCP/Railroad handled separately later)
+  const sl = data.subline || ''
+  const showPremOps  = !sl || sl === 'Premises/Operations and Products/Completed Operations' || sl === 'Premises/Operations'
+  const showProdComp = !sl || sl === 'Premises/Operations and Products/Completed Operations' || sl === 'Products/Completed Operations'
+
+  return (
+    <div className="space-y-5">
+
+      {/* ── Risk Profile ── */}
+      <Card title="Risk Profile">
+        <div className="space-y-4">
+          {/* State + Revenue + Commission */}
+          <div className="grid grid-cols-3 gap-4">
+            <Select
+              label="State" required searchable
+              options={usStates}
+              value={data.state}
+              onChange={v => set('state', v)}
+            />
+            <Input
+              label="Estimated Annual Revenue"
+              type="number"
+              value={data.estimatedAnnualRevenue ?? ''}
+              onChange={e => set('estimatedAnnualRevenue', e.target.value === '' ? '' : Number(e.target.value))}
+              prefix="$"
+              hint="Used for premium calculation"
+            />
+            <Input
+              label="General Liability Commission"
+              required
+              type="number"
+              value={data.commission ?? ''}
+              onChange={e => set('commission', e.target.value === '' ? '' : Number(e.target.value))}
+              suffix="%"
+              placeholder="e.g. 12.5"
+              hint="Default: 12.5%"
+            />
+          </div>
+
+          {/* OSHA Violations */}
+          <div>
+            <SectionRule color="bg-amber-400">OSHA &amp; Compliance Violations</SectionRule>
+            {totalViolations > 0 && (
+              <div className="flex items-center gap-1.5 mb-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                {totalViolations} violation{totalViolations > 1 ? 's' : ''} recorded — may affect underwriting.
+              </div>
+            )}
+            <div className="grid grid-cols-3 gap-3">
+              <CountStepper label="OSHA Violations"    value={data.oshaViolations}      onChange={v => set('oshaViolations', v)}      warn />
+              <CountStepper label="Repeated Violations" value={data.repeatedViolations}  onChange={v => set('repeatedViolations', v)}  warn />
+              <CountStepper label="Willful Violations"  value={data.willfulViolations}   onChange={v => set('willfulViolations', v)}   warn />
+            </div>
+          </div>
+
+          {/* Product Recalls */}
+          <div>
+            <SectionRule color="bg-crimson-400">Product Recalls</SectionRule>
+            <div className="grid grid-cols-2 gap-3">
+              <CountStepper label="CSPC Product Recalls" value={data.cspcProductRecalls} onChange={v => set('cspcProductRecalls', v)} warn />
+              <CountStepper label="FDA Product Recalls"  value={data.fdaProductRecalls}  onChange={v => set('fdaProductRecalls', v)}  warn />
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* ── Policy Limits ── */}
+      <Card title="Policy Limits">
+        {/* Subline — required, at top */}
+        <div className="mb-4">
+          <Select
+            label="Subline" required
+            options={sublineOptions}
+            value={data.subline}
+            onChange={v => set('subline', v)}
+          />
+        </div>
+        <SectionRule color="bg-ink-400">Liability Limits</SectionRule>
+        <div className="grid grid-cols-2 gap-4">
+          <Select label="Each Occurrence Limit *"       required searchable options={occurrenceLimits} value={data.eachOccurrenceLimit}      onChange={v => set('eachOccurrenceLimit', v)} />
+          <Select label="General Aggregate Limit *"     required searchable options={aggLimits}        value={data.generalAggregateLimit}     onChange={v => set('generalAggregateLimit', v)} />
+          {showProdComp && <Select label="Products/Comp Ops Aggregate" searchable options={aggLimits} value={data.prodCompOpsAggregateLimit} onChange={v => set('prodCompOpsAggregateLimit', v)} />}
+          <Select label="Medical Payments Limit"        searchable          options={medPayLimits}     value={data.medPayLimit}               onChange={v => set('medPayLimit', v)} />
+          <Input  label="Damage to Premises Rented"                         value={data.damageToRentedPremisesLimit}  onChange={e => set('damageToRentedPremisesLimit', e.target.value)}  prefix="$" />
+          <Input  label="Personal &amp; Adv Injury"                         value={data.personalAdvInjuryLimit}      onChange={e => set('personalAdvInjuryLimit', e.target.value)}       prefix="$" />
+        </div>
+        <div className="mt-4 pt-3 border-t border-stone-100 max-w-xs">
+          <Select label="Coverage Form" options={coverageForms} value={data.coverageForm} onChange={v => set('coverageForm', v)} />
+        </div>
+      </Card>
+
+      {/* ── Deductibles ── */}
+      <Card title="Deductibles">
+        <SectionRule color="bg-amber-400">Deductible Schedule</SectionRule>
+        <div className="rounded-lg overflow-hidden border border-stone-100">
+          <table className="w-full text-sm">
+            <thead className="bg-stone-25">
+              <tr>
+                <th className="text-left px-4 py-2.5 text-xs font-semibold text-stone-400 w-1/3">Coverage</th>
+                <th className="text-left px-4 py-2.5 text-xs font-semibold text-stone-400">BI Deductible</th>
+                <th className="text-left px-4 py-2.5 text-xs font-semibold text-stone-400">PD Deductible</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-stone-50">
+              {showPremOps && (
+                <tr>
+                  <td className="px-4 py-3 text-xs font-semibold text-stone-600 whitespace-nowrap">Prem/Ops</td>
+                  <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.premOpsBI}  onChange={v => set('premOpsBI', v)} /></td>
+                  <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.premOpsPD}  onChange={v => set('premOpsPD', v)} /></td>
+                </tr>
+              )}
+              {showProdComp && (
+                <tr>
+                  <td className="px-4 py-3 text-xs font-semibold text-stone-600 whitespace-nowrap">Prod/Comp Ops</td>
+                  <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.prodCompOpsBI} onChange={v => set('prodCompOpsBI', v)} /></td>
+                  <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.prodCompOpsPD} onChange={v => set('prodCompOpsPD', v)} /></td>
+                </tr>
+              )}
+              <tr>
+                <td className="px-4 py-3 text-xs font-semibold text-stone-600">Combined BI&amp;PD</td>
+                <td className="px-3 py-2" colSpan={2}>
+                  <div className="grid grid-cols-2 gap-2">
+                    {showPremOps  && <Select searchable options={deductibleOptions} value={data.premOpsBIandPD}     onChange={v => set('premOpsBIandPD', v)} />}
+                    {showProdComp && <Select searchable options={deductibleOptions} value={data.prodCompOpsBIandPD} onChange={v => set('prodCompOpsBIandPD', v)} />}
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      {/* ── Additional Coverages ── */}
+      <Card title="Additional Coverages">
+        <div className="space-y-2 mb-3">
+          {(data.additionalCoverages || []).length === 0 && (
+            <p className="text-xs text-stone-400 italic py-2">No additional coverages added.</p>
+          )}
+          {(data.additionalCoverages || []).map(c => (
+            <div key={c.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-stone-50 border border-stone-100">
+              <span className="flex-1 text-sm text-stone-700">{c.name}</span>
+              <button
+                type="button"
+                onClick={() => removeCoverage(c.id)}
+                className="p-1 rounded text-stone-400 hover:text-crimson-500 hover:bg-crimson-50 transition-colors"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+        {/* Add from catalog */}
+        <div className="flex items-center gap-2 pt-3 border-t border-stone-100">
+          <select
+            value={newCoverage}
+            onChange={e => setNewCoverage(e.target.value)}
+            className="flex-1 px-3 py-2 text-sm border border-stone-200 rounded-lg bg-stone-50 focus:outline-none focus:ring-2 focus:ring-ink-400 focus:border-ink-400 text-stone-700"
+          >
+            <option value="">Select additional coverage…</option>
+            {ADDITIONAL_COVERAGES_CATALOG.filter(name =>
+              !(data.additionalCoverages || []).some(c => c.name === name)
+            ).map(name => (
+              <option key={name} value={name}>{name}</option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={addCoverage}
+            disabled={!newCoverage}
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-ink-800 text-white rounded-lg hover:bg-ink-700 disabled:opacity-40 transition-colors shrink-0"
+          >
+            <Plus className="h-3.5 w-3.5" /> Add
+          </button>
+        </div>
+      </Card>
+
+      {/* ── Loss Control — collapsible ── */}
+      <CollapsibleSection title="Loss Control Requirements">
+        <div className="pt-4 space-y-3">
+          <Select
+            label="Post-Bind Loss Control Override"
+            options={lossControlOpts}
+            value={data.postBindLossControlOverride}
+            onChange={v => set('postBindLossControlOverride', v)}
+          />
+          <div className="space-y-2">
+            {[
+              'Premises/Operations and Products/Completed Operations',
+              'Products/Completed Operations',
+              'Liquor Liability',
+              'Owners and Contractors',
+              'Railroad',
+            ].map(sec => (
+              <div key={sec} className="flex items-center justify-between px-4 py-3 rounded-lg bg-stone-25 border border-stone-100">
+                <span className="text-sm text-stone-700">{sec}</span>
+                <span className="text-xs text-stone-400 font-medium">Not Applicable</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </CollapsibleSection>
+
+      {/* ── Coverage Flags — collapsible with active badge ── */}
+      <CollapsibleSection title="Coverage Options &amp; Flags" badge={activeFlagCount}>
+        <div className="pt-4 grid grid-cols-2 gap-x-8 gap-y-3">
+          {[
+            ['governmentalSubdivision',        'Governmental Subdivision'],
+            ['limitedProductWithdrawal',        'Limited Product Withdrawal'],
+            ['sizeOfRiskRating',                'Size Of Risk Rating'],
+            ['stopGapCoverage',                 'Stop Gap Coverage'],
+            ['medPayExclusion',                 'Med Pay Exclusion'],
+            ['cyberIncidentLiability',          'Cyber Incident Liability'],
+            ['lossOfElectronicData',            'Loss Of Electronic Data'],
+            ['experienceRating',                'Experience Rating'],
+            ['scheduleRating',                  'Schedule Rating'],
+            ['acceptTerrorismCoverage',         'Accept Terrorism Coverage'],
+            ['compositeRating',                 'Composite Rating'],
+            ['limitedCoverageUnmannedAircraft', 'Unmanned Aircraft'],
+            ['tripTerminatesEarly',             'TRIP Terminates Early'],
+            ['ndPesticideApplicator',           'ND Pesticide Applicator'],
+          ].map(([k, label]) => (
+            <div key={k} className="flex items-center justify-between py-1">
+              <span className="text-sm text-stone-700">{label}</span>
+              <Toggle checked={!!data[k]} onChange={v => set(k, v)} />
+            </div>
+          ))}
+        </div>
+      </CollapsibleSection>
+
+      {/* ── Minimum Premium — collapsible ── */}
+      <CollapsibleSection title="Minimum Premium">
+        <div className="pt-4 grid grid-cols-2 gap-4">
+          <Input label="Premises/Ops Minimum"       value={data.premOpsMinimum}         onChange={e => set('premOpsMinimum', e.target.value)}         prefix="$" />
+          <Input label="Products/Comp Ops Minimum"  value={data.prodCompOpsMinimum}     onChange={e => set('prodCompOpsMinimum', e.target.value)}     prefix="$" />
+          <Input label="Special Combined Minimum"   value={data.specialCombinedMinimum} onChange={e => set('specialCombinedMinimum', e.target.value)} prefix="$" />
+          <Input label="Policy Minimum"             value={data.policyMinimum}          onChange={e => set('policyMinimum', e.target.value)}          prefix="$" />
+        </div>
+      </CollapsibleSection>
+
+      {/* ── Additional Notes — collapsible ── */}
+      <CollapsibleSection title="Additional Notes &amp; Documentation">
+        <div className="pt-4 space-y-4">
+          <div>
+            <label className="form-label mb-1.5">Diligent Effort Documentation</label>
+            <textarea
+              rows={3}
+              value={data.diligentEffortDocumentation || ''}
+              onChange={e => set('diligentEffortDocumentation', e.target.value)}
+              placeholder="Document diligent effort for surplus lines…"
+              className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-ink-400 focus:border-ink-400 bg-stone-50 placeholder-stone-300 resize-none"
+            />
+          </div>
+          <div>
+            <label className="form-label mb-1.5">Additional Text for Quote</label>
+            <textarea
+              rows={3}
+              value={data.additionalTextForQuote || ''}
+              onChange={e => set('additionalTextForQuote', e.target.value)}
+              placeholder="Additional text to appear on the quote proposal…"
+              className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-ink-400 focus:border-ink-400 bg-stone-50 placeholder-stone-300 resize-none"
+            />
+          </div>
+          <div>
+            <label className="form-label mb-1.5">Additional Coverage Detail</label>
+            <textarea
+              rows={3}
+              value={data.additionalCoverageDetail || ''}
+              onChange={e => set('additionalCoverageDetail', e.target.value)}
+              placeholder="Describe any additional coverage details…"
+              className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-ink-400 focus:border-ink-400 bg-stone-50 placeholder-stone-300 resize-none"
+            />
+          </div>
+          <div className="max-w-xs">
+            <Input
+              label="Additional Policy Fee"
+              type="number"
+              value={data.additionalPolicyFee ?? ''}
+              onChange={e => set('additionalPolicyFee', e.target.value === '' ? '' : Number(e.target.value))}
+              prefix="$"
+              placeholder="0"
+            />
+          </div>
+        </div>
+      </CollapsibleSection>
+
+    </div>
+  )
+}
