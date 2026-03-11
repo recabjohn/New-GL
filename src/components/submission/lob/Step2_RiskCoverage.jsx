@@ -27,6 +27,11 @@ const ADDITIONAL_COVERAGES_CATALOG = [
   'Blanket Additional Insured',
 ]
 
+const liquorLicenseOpts  = ['Beer & Wine Only', 'Full Liquor', 'BYOB Permitted', 'Temporary Permit']
+const liquorEstabOpts    = ['Bar/Tavern', 'Restaurant', 'Hotel/Motel', 'Liquor Store', 'Nightclub', 'Fraternal/Social Club', 'Catering']
+const ocpOperationsOpts  = ['General Contracting', 'Plumbing', 'Electrical', 'HVAC', 'Roofing', 'Excavation', 'Demolition', 'Other']
+const rrOperationsOpts   = ['Construction', 'Maintenance', 'Repair', 'Demolition', 'Excavation', 'Pipeline', 'Utility Work']
+
 function SectionRule({ color, children }) {
   return (
     <div className="flex items-center gap-2 mb-3">
@@ -122,10 +127,14 @@ export default function Step2_RiskCoverage({ data, onChange }) {
 
   const totalViolations = (data.oshaViolations || 0) + (data.repeatedViolations || 0) + (data.willfulViolations || 0)
 
-  // Subline-driven field visibility (Liquor/OCP/Railroad handled separately later)
+  // Subline-driven field visibility
   const sl = data.subline || ''
   const showPremOps  = !sl || sl === 'Premises/Operations and Products/Completed Operations' || sl === 'Premises/Operations'
   const showProdComp = !sl || sl === 'Premises/Operations and Products/Completed Operations' || sl === 'Products/Completed Operations'
+  const showLiquor   = sl === 'Liquor'
+  const showOCP      = sl === 'Owners and Contractors'
+  const showRailroad = sl === 'Railroad'
+  const showSpecial  = showLiquor || showOCP || showRailroad
 
   return (
     <div className="space-y-5">
@@ -201,17 +210,211 @@ export default function Step2_RiskCoverage({ data, onChange }) {
         </div>
         <SectionRule color="bg-ink-400">Liability Limits</SectionRule>
         <div className="grid grid-cols-2 gap-4">
-          <Select label="Each Occurrence Limit *"       required searchable options={occurrenceLimits} value={data.eachOccurrenceLimit}      onChange={v => set('eachOccurrenceLimit', v)} />
-          <Select label="General Aggregate Limit *"     required searchable options={aggLimits}        value={data.generalAggregateLimit}     onChange={v => set('generalAggregateLimit', v)} />
-          {showProdComp && <Select label="Products/Comp Ops Aggregate" searchable options={aggLimits} value={data.prodCompOpsAggregateLimit} onChange={v => set('prodCompOpsAggregateLimit', v)} />}
-          <Select label="Medical Payments Limit"        searchable          options={medPayLimits}     value={data.medPayLimit}               onChange={v => set('medPayLimit', v)} />
-          <Input  label="Damage to Premises Rented"                         value={data.damageToRentedPremisesLimit}  onChange={e => set('damageToRentedPremisesLimit', e.target.value)}  prefix="$" />
-          <Input  label="Personal &amp; Adv Injury"                         value={data.personalAdvInjuryLimit}      onChange={e => set('personalAdvInjuryLimit', e.target.value)}       prefix="$" />
+          <Select label="Each Occurrence Limit *" required searchable options={occurrenceLimits} value={data.eachOccurrenceLimit} onChange={v => set('eachOccurrenceLimit', v)} />
+          <Select
+            label={showOCP ? 'OCP Aggregate Limit *' : 'General Aggregate Limit *'}
+            required searchable options={aggLimits}
+            value={data.generalAggregateLimit} onChange={v => set('generalAggregateLimit', v)}
+          />
+          {showProdComp && (
+            <Select label="Products/Comp Ops Aggregate" searchable options={aggLimits} value={data.prodCompOpsAggregateLimit} onChange={v => set('prodCompOpsAggregateLimit', v)} />
+          )}
+          {!showOCP && !showRailroad && (
+            <Select label="Medical Payments Limit" searchable options={medPayLimits} value={data.medPayLimit} onChange={v => set('medPayLimit', v)} />
+          )}
+          {!showOCP && !showRailroad && (
+            <Input label="Damage to Premises Rented" value={data.damageToRentedPremisesLimit} onChange={e => set('damageToRentedPremisesLimit', e.target.value)} prefix="$" />
+          )}
+          {!showOCP && (
+            <Input label="Personal &amp; Adv Injury" value={data.personalAdvInjuryLimit} onChange={e => set('personalAdvInjuryLimit', e.target.value)} prefix="$" />
+          )}
         </div>
         <div className="mt-4 pt-3 border-t border-stone-100 max-w-xs">
           <Select label="Coverage Form" options={coverageForms} value={data.coverageForm} onChange={v => set('coverageForm', v)} />
         </div>
       </Card>
+
+      {/* ── Liquor Liability Details ── */}
+      {showLiquor && (
+        <Card title="Liquor Liability Details">
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <Select
+                label="Type of Liquor License" required
+                options={liquorLicenseOpts}
+                value={data.liquorLicenseType}
+                onChange={v => set('liquorLicenseType', v)}
+              />
+              <Select
+                label="Type of Establishment" required
+                options={liquorEstabOpts}
+                value={data.liquorEstabType}
+                onChange={v => set('liquorEstabType', v)}
+              />
+              <Input
+                label="% of Gross Receipts from Alcohol"
+                type="number"
+                value={data.liquorAlcoholPct ?? ''}
+                onChange={e => set('liquorAlcoholPct', e.target.value === '' ? '' : Number(e.target.value))}
+                suffix="%"
+                placeholder="0–100"
+              />
+              <Input
+                label="Annual Gross Receipts"
+                type="number"
+                value={data.liquorGrossReceipts ?? ''}
+                onChange={e => set('liquorGrossReceipts', e.target.value === '' ? '' : Number(e.target.value))}
+                prefix="$"
+              />
+              <Input
+                label="Number of Seats"
+                type="number"
+                value={data.liquorSeats ?? ''}
+                onChange={e => set('liquorSeats', e.target.value === '' ? '' : Number(e.target.value))}
+                placeholder="e.g. 120"
+              />
+            </div>
+            <SectionRule color="bg-amber-400">Operating Characteristics</SectionRule>
+            <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+              {[
+                ['liquorBYOB',             'BYOB Permitted'],
+                ['liquorOpenPastMidnight', 'Open Past Midnight'],
+                ['liquorHappyHour',        'Happy Hour Promotions'],
+                ['liquorLiveEntertainment','Live Entertainment'],
+              ].map(([k, label]) => (
+                <div key={k} className="flex items-center justify-between py-1">
+                  <span className="text-sm text-stone-700">{label}</span>
+                  <Toggle checked={!!data[k]} onChange={v => set(k, v)} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* ── OCP Project Details ── */}
+      {showOCP && (
+        <Card title="OCP Project Details">
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="Contractor / Subcontractor Name" required
+                value={data.ocpContractorName || ''}
+                onChange={e => set('ocpContractorName', e.target.value)}
+                placeholder="e.g. Acme Construction LLC"
+              />
+              <Select
+                label="Type of Operations" required
+                options={ocpOperationsOpts}
+                value={data.ocpOperationsType}
+                onChange={v => set('ocpOperationsType', v)}
+              />
+              <Input
+                label="Project Location Address"
+                value={data.ocpProjectAddress || ''}
+                onChange={e => set('ocpProjectAddress', e.target.value)}
+                placeholder="Street, City, State"
+              />
+              <Input
+                label="Estimated Total Cost of Operations"
+                type="number"
+                value={data.ocpEstimatedCost ?? ''}
+                onChange={e => set('ocpEstimatedCost', e.target.value === '' ? '' : Number(e.target.value))}
+                prefix="$"
+              />
+              <Input
+                label="Project Start Date"
+                type="date"
+                value={data.ocpStartDate || ''}
+                onChange={e => set('ocpStartDate', e.target.value)}
+              />
+              <Input
+                label="Project Completion Date"
+                type="date"
+                value={data.ocpEndDate || ''}
+                onChange={e => set('ocpEndDate', e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="form-label mb-1.5">Project Description</label>
+              <textarea
+                rows={3}
+                value={data.ocpProjectDescription || ''}
+                onChange={e => set('ocpProjectDescription', e.target.value)}
+                placeholder="Describe the scope of work and operations…"
+                className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-ink-400 focus:border-ink-400 bg-stone-50 placeholder-stone-300 resize-none"
+              />
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* ── Railroad Project Details ── */}
+      {showRailroad && (
+        <Card title="Railroad Project Details">
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="Railroad Company Name" required
+                value={data.rrCompanyName || ''}
+                onChange={e => set('rrCompanyName', e.target.value)}
+                placeholder="e.g. Union Pacific Railroad"
+              />
+              <Select
+                label="Type of Operations Near Railroad" required
+                options={rrOperationsOpts}
+                value={data.rrOperationsType}
+                onChange={v => set('rrOperationsType', v)}
+              />
+              <Input
+                label="Location of Operations"
+                value={data.rrOperationsLocation || ''}
+                onChange={e => set('rrOperationsLocation', e.target.value)}
+                placeholder="Street / mile marker / description"
+              />
+              <div>
+                <Input
+                  label="Distance from Active Rail (ft)"
+                  type="number"
+                  value={data.rrDistanceFeet ?? ''}
+                  onChange={e => set('rrDistanceFeet', e.target.value === '' ? '' : Number(e.target.value))}
+                  placeholder="e.g. 75"
+                />
+                {data.rrDistanceFeet !== '' && data.rrDistanceFeet !== undefined && Number(data.rrDistanceFeet) < 50 && (
+                  <p className="flex items-center gap-1 mt-1 text-xs text-amber-600">
+                    <AlertTriangle className="h-3 w-3 shrink-0" /> Under 50 ft — additional review required
+                  </p>
+                )}
+              </div>
+              <Input
+                label="Estimated Duration (months)"
+                type="number"
+                value={data.rrDurationMonths ?? ''}
+                onChange={e => set('rrDurationMonths', e.target.value === '' ? '' : Number(e.target.value))}
+                placeholder="e.g. 6"
+              />
+              <Input
+                label="Estimated Cost of Work Near Railroad"
+                type="number"
+                value={data.rrEstimatedCost ?? ''}
+                onChange={e => set('rrEstimatedCost', e.target.value === '' ? '' : Number(e.target.value))}
+                prefix="$"
+              />
+            </div>
+            <div className="flex items-center justify-between px-4 py-3 rounded-lg border border-stone-100 bg-stone-25">
+              <div>
+                <p className="text-sm font-medium text-stone-800">Any Work Within 50 Feet of Tracks?</p>
+                {data.rrWithin50Feet && (
+                  <p className="text-xs text-amber-600 flex items-center gap-1 mt-0.5">
+                    <AlertTriangle className="h-3 w-3 shrink-0" /> Flagged for underwriter review
+                  </p>
+                )}
+              </div>
+              <Toggle checked={!!data.rrWithin50Feet} onChange={v => set('rrWithin50Feet', v)} />
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* ── Deductibles ── */}
       <Card title="Deductibles">
@@ -240,15 +443,38 @@ export default function Step2_RiskCoverage({ data, onChange }) {
                   <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.prodCompOpsPD} onChange={v => set('prodCompOpsPD', v)} /></td>
                 </tr>
               )}
-              <tr>
-                <td className="px-4 py-3 text-xs font-semibold text-stone-600">Combined BI&amp;PD</td>
-                <td className="px-3 py-2" colSpan={2}>
-                  <div className="grid grid-cols-2 gap-2">
-                    {showPremOps  && <Select searchable options={deductibleOptions} value={data.premOpsBIandPD}     onChange={v => set('premOpsBIandPD', v)} />}
-                    {showProdComp && <Select searchable options={deductibleOptions} value={data.prodCompOpsBIandPD} onChange={v => set('prodCompOpsBIandPD', v)} />}
-                  </div>
-                </td>
-              </tr>
+              {!showSpecial && (
+                <tr>
+                  <td className="px-4 py-3 text-xs font-semibold text-stone-600">Combined BI&amp;PD</td>
+                  <td className="px-3 py-2" colSpan={2}>
+                    <div className="grid grid-cols-2 gap-2">
+                      {showPremOps  && <Select searchable options={deductibleOptions} value={data.premOpsBIandPD}     onChange={v => set('premOpsBIandPD', v)} />}
+                      {showProdComp && <Select searchable options={deductibleOptions} value={data.prodCompOpsBIandPD} onChange={v => set('prodCompOpsBIandPD', v)} />}
+                    </div>
+                  </td>
+                </tr>
+              )}
+              {showLiquor && (
+                <tr>
+                  <td className="px-4 py-3 text-xs font-semibold text-stone-600 whitespace-nowrap">Liquor Liability</td>
+                  <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.liquorBI} onChange={v => set('liquorBI', v)} /></td>
+                  <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.liquorPD} onChange={v => set('liquorPD', v)} /></td>
+                </tr>
+              )}
+              {showOCP && (
+                <tr>
+                  <td className="px-4 py-3 text-xs font-semibold text-stone-600 whitespace-nowrap">OCP</td>
+                  <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.ocpBI} onChange={v => set('ocpBI', v)} /></td>
+                  <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.ocpPD} onChange={v => set('ocpPD', v)} /></td>
+                </tr>
+              )}
+              {showRailroad && (
+                <tr>
+                  <td className="px-4 py-3 text-xs font-semibold text-stone-600 whitespace-nowrap">Railroad</td>
+                  <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.railroadBI} onChange={v => set('railroadBI', v)} /></td>
+                  <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.railroadPD} onChange={v => set('railroadPD', v)} /></td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
