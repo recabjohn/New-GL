@@ -470,8 +470,8 @@ export default function TopBar() {
                 UA
               </div>
               <div className="hidden sm:block">
-                <p className="text-xs font-semibold text-stone-800 leading-none">uiuxAdmin</p>
-                <p className="text-[9px] text-stone-400 mt-0.5">Senior Underwriter</p>
+                <p className="text-xs font-semibold text-stone-800 leading-none">John</p>
+                <p className="text-[9px] text-stone-400 mt-0.5">Underwriter</p>
               </div>
             </button>
 

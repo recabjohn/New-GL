@@ -305,7 +305,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between mb-5">
         <div>
           <h1 className="text-xl font-bold text-stone-900 tracking-tight">Underwriting Dashboard</h1>
-          <p className="text-sm text-stone-400 mt-0.5">Commercial GL · March 2026 · All Territories</p>
+          
         </div>
         <div className="flex items-center gap-2">
           <button

@@ -190,7 +190,7 @@ export default function Sidebar() {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-white tracking-tight leading-none">Solaris</p>
               <p className="text-[10px] text-ink-500 font-semibold mt-0.5 uppercase tracking-widest">
-                GL Admin
+                Admin Panel
               </p>
             </div>
           </>
@@ -297,13 +297,13 @@ export default function Sidebar() {
             ].join(' ')}
           >
             <div className="w-7 h-7 rounded-full bg-flame-500 flex items-center justify-center text-white text-[11px] font-bold shrink-0 ring-2 ring-flame-700">
-              UA
+              John
             </div>
             {!collapsed && (
               <>
                 <div className="flex-1 min-w-0 text-left">
-                  <p className="text-xs font-semibold text-ink-100 truncate">uiuxAdmin</p>
-                  <p className="text-[10px] text-ink-500 truncate">Senior Underwriter</p>
+                  <p className="text-xs font-semibold text-ink-100 truncate">John</p>
+                  <p className="text-[10px] text-ink-500 truncate">Underwriter</p>
                 </div>
                 {showUserMenu
                   ? <ChevronUp className="h-3 w-3 text-ink-600 shrink-0" />
