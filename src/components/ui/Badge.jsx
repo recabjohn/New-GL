@@ -6,6 +6,8 @@ const statusColors = {
   'Cancelled':   'bg-crimson-50 text-crimson-700 ring-crimson-200',
   'Bound':       'bg-sage-100 text-sage-800 ring-sage-300',
   'Issued':      'bg-ink-100 text-ink-700 ring-ink-200',
+  'Declined':    'bg-crimson-50 text-crimson-700 ring-crimson-200',
+  'Expired':     'bg-stone-100 text-stone-500 ring-stone-200',
 }
 
 const priorityColors = {
