@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState('')
   const [shake, setShake] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -29,7 +30,7 @@ export default function LoginPage() {
     // Simulate network delay for realism
     await new Promise(r => setTimeout(r, 600))
 
-    const result = login(username.trim(), password)
+    const result = login(username.trim(), password, rememberMe)
     setLoading(false)
 
     if (result.success) {
@@ -168,6 +169,28 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Remember Me + Forgot Password */}
+            <div className="flex items-center justify-between mt-5">
+              <label className="flex items-center gap-2 cursor-pointer select-none group">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={e => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 rounded border-stone-300 text-flame-500 focus:ring-flame-400 focus:ring-offset-0 transition-colors cursor-pointer"
+                />
+                <span className="text-xs font-medium text-stone-500 group-hover:text-stone-700 transition-colors">
+                  Remember me
+                </span>
+              </label>
+
+              <button
+                type="button"
+                className="text-xs font-medium text-ink-500 hover:text-ink-700 transition-colors"
+              >
+                Forgot Password
+              </button>
+            </div>
+
             {/* Error message */}
             {error && (
               <div className="mt-4 flex items-center gap-2 px-3 py-2.5 bg-crimson-50 border border-crimson-200 rounded-lg">
@@ -176,19 +199,12 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Forgot password + Sign In */}
-            <div className="flex items-center justify-between mt-6">
-              <button
-                type="button"
-                className="text-sm font-medium text-ink-500 hover:text-ink-700 transition-colors"
-              >
-                Forgot Password
-              </button>
-
+            {/* Sign In Button */}
+            <div className="mt-6">
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex items-center gap-2 px-8 py-2.5 rounded-lg bg-flame-500 text-white text-sm font-bold uppercase tracking-wider shadow-sm hover:bg-flame-600 active:bg-flame-700 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-flame-400 focus:ring-offset-2"
+                className="w-full inline-flex items-center justify-center gap-2 px-8 py-3 rounded-lg bg-flame-500 text-white text-sm font-bold uppercase tracking-wider shadow-sm hover:bg-flame-600 active:bg-flame-700 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-flame-400 focus:ring-offset-2"
               >
                 {loading ? (
                   <>

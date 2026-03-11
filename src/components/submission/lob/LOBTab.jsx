@@ -7,6 +7,7 @@ import Step1_SubmissionInfo from './Step1_SubmissionInfo'
 import Step2_RiskCoverage   from './Step2_RiskCoverage'
 import Step3_Locations      from './Step3_Locations'
 import { ArrowLeft, ArrowRight, BarChart2, Check } from 'lucide-react'
+import { useBeforeUnload, getDraftData, clearDraftData } from '../../../hooks/useFormGuard'
 
 const STEPS = [
   { label: 'Submission Info',  sublabel: 'Underwriter & loss info' },
@@ -19,8 +20,16 @@ export default function LOBTab({ onComplete }) {
   const navigate = useNavigate()
   const toast    = useToast()
   const [step, setStep]     = useState(1)
-  const [data, setData]     = useState(glPolicy)
+  
+  const [data, setData] = useState(() => {
+    return getDraftData(`draft_lob_${id}`) || glPolicy
+  })
+  
   const [saving, setSaving] = useState(false)
+  const [saved, setSaved]   = useState(false)
+
+  const isDirty = !saved && JSON.stringify(data) !== JSON.stringify(glPolicy)
+  useBeforeUnload(isDirty, `draft_lob_${id}`, data)
 
   const handleNext = async () => {
     if (step < 3) { setStep(s => s + 1); return }
@@ -43,6 +52,8 @@ export default function LOBTab({ onComplete }) {
     setSaving(true)
     await new Promise(r => setTimeout(r, 800))
     setSaving(false)
+    setSaved(true)
+    clearDraftData(`draft_lob_${id}`)
     toast.success('GL Policy saved', 'All 3 steps saved. Proceeding to rating.')
     onComplete?.()
     navigate(`/submissions/${id}/browse`)

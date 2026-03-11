@@ -13,6 +13,8 @@ import SubmissionFilters from '../components/dashboard/SubmissionFilters'
 import NewSubmissionModal from '../components/dashboard/NewSubmissionModal'
 import { submissions, assignees } from '../data/mockData'
 import { useToast } from '../components/ui/Toast'
+import { useSimulatedLoading } from '../hooks/useFormGuard'
+import { SkeletonTable } from '../components/ui/Skeleton'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -380,6 +382,7 @@ const PRESET_FILTERS = [
 export default function SubmissionsPage() {
   const navigate = useNavigate()
   const toast = useToast()
+  const loading = useSimulatedLoading(500)
 
   // Core filter / pipeline state
   const [filters, setFilters] = useState(defaultFilters)

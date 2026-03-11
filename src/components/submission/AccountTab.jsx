@@ -10,14 +10,22 @@ import SubmissionInfoCard from './account/SubmissionInfoCard'
 import { account as defaultAccount } from '../../data/mockData'
 import { useToast } from '../ui/Toast'
 import { Save, ArrowRight, CheckCircle2 } from 'lucide-react'
+import { useBeforeUnload, getDraftData, clearDraftData } from '../../hooks/useFormGuard'
 
 export default function AccountTab() {
   const { id }    = useParams()
   const navigate  = useNavigate()
   const toast     = useToast()
-  const [data, setData]     = useState(defaultAccount)
+  
+  const [data, setData] = useState(() => {
+    return getDraftData(`draft_account_${id}`) || defaultAccount
+  })
+  
   const [saving, setSaving] = useState(false)
   const [saved, setSaved]   = useState(false)
+
+  const isDirty = !saved && JSON.stringify(data) !== JSON.stringify(defaultAccount)
+  useBeforeUnload(isDirty, `draft_account_${id}`, data)
 
   const setAddress  = addr => setData(d => ({ ...d, address: addr }))
   const setContacts = list => setData(d => ({ ...d, contacts: list }))
@@ -31,6 +39,7 @@ export default function AccountTab() {
     await new Promise(r => setTimeout(r, 700))
     setSaving(false)
     setSaved(true)
+    clearDraftData(`draft_account_${id}`)
     toast.success('Account saved', 'Account information has been saved successfully.')
   }
 

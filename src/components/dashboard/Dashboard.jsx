@@ -14,6 +14,8 @@ import SubmissionFilters from './SubmissionFilters'
 import NewSubmissionModal from './NewSubmissionModal'
 import { submissions, assignees } from '../../data/mockData'
 import { useToast } from '../ui/Toast'
+import { useSimulatedLoading } from '../../hooks/useFormGuard'
+import { SkeletonCardRow, SkeletonTable } from '../ui/Skeleton'
 
 // ── Workflow Pipeline ────────────────────────────────────────────────────────
 const PIPELINE = [
@@ -61,6 +63,7 @@ const defaultFilters = { priority: '', transactionType: '', status: '', assignee
 export default function Dashboard() {
   const navigate = useNavigate()
   const toast = useToast()
+  const loading = useSimulatedLoading(500)
 
   const [filters, setFilters]   = useState(defaultFilters)
   const [modal, setModal]       = useState(false)
@@ -369,29 +372,33 @@ export default function Dashboard() {
       </div>
 
       {/* ── KPI Row ── */}
-      <div className="grid grid-cols-4 gap-4 mb-4">
-        {KPIS.map(k => (
-          <div key={k.label} className="bg-white rounded-xl border border-stone-200 shadow-card px-5 py-4 hover:shadow-elevated transition-shadow">
-            <div className="flex items-start justify-between mb-3">
-              <div className={`${k.bg} p-2 rounded-lg`}>
-                <k.icon className={`h-4 w-4 ${k.color}`} />
+      {loading ? (
+        <div className="mb-4"><SkeletonCardRow /></div>
+      ) : (
+        <div className="grid grid-cols-4 gap-4 mb-4">
+          {KPIS.map(k => (
+            <div key={k.label} className="bg-white rounded-xl border border-stone-200 shadow-card px-5 py-4 hover:shadow-elevated transition-shadow">
+              <div className="flex items-start justify-between mb-3">
+                <div className={`${k.bg} p-2 rounded-lg`}>
+                  <k.icon className={`h-4 w-4 ${k.color}`} />
+                </div>
+                <span className={[
+                  'flex items-center gap-0.5 text-[11px] font-bold',
+                  k.positive ? 'text-sage-600' : 'text-crimson-600',
+                ].join(' ')}>
+                  {k.trendUp
+                    ? <ArrowUpRight className="h-3.5 w-3.5" />
+                    : <ArrowDownRight className="h-3.5 w-3.5" />}
+                  {k.delta}
+                </span>
               </div>
-              <span className={[
-                'flex items-center gap-0.5 text-[11px] font-bold',
-                k.positive ? 'text-sage-600' : 'text-crimson-600',
-              ].join(' ')}>
-                {k.trendUp
-                  ? <ArrowUpRight className="h-3.5 w-3.5" />
-                  : <ArrowDownRight className="h-3.5 w-3.5" />}
-                {k.delta}
-              </span>
+              <p className="text-2xl font-black text-stone-900 tracking-tight font-mono">{k.value}</p>
+              <p className="text-xs font-semibold text-stone-500 mt-0.5">{k.label}</p>
+              <p className="text-[10px] text-stone-300 mt-0.5 uppercase tracking-wide">{k.sub}</p>
             </div>
-            <p className="text-2xl font-black text-stone-900 tracking-tight font-mono">{k.value}</p>
-            <p className="text-xs font-semibold text-stone-500 mt-0.5">{k.label}</p>
-            <p className="text-[10px] text-stone-300 mt-0.5 uppercase tracking-wide">{k.sub}</p>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* ── Main: table + right panel ── */}
       <div className="flex gap-4 items-start">
@@ -421,12 +428,16 @@ export default function Dashboard() {
             </div>
           )}
 
-          <Table
-            columns={COLUMNS}
-            data={mergedSubmissions}
-            defaultPageSize={25}
-            onRowClick={row => navigate(`/submissions/${row.id}`)}
-          />
+          {loading ? (
+            <SkeletonTable rows={10} cols={8} />
+          ) : (
+            <Table
+              columns={COLUMNS}
+              data={mergedSubmissions}
+              defaultPageSize={25}
+              onRowClick={row => navigate(`/submissions/${row.id}`)}
+            />
+          )}
         </div>
 
         {/* ── Right panel ── */}

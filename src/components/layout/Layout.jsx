@@ -1,6 +1,7 @@
 import Sidebar from './Sidebar'
 import TopBar from './TopBar'
 import { ToastProvider } from '../ui/Toast'
+import SessionTimeoutModal from '../ui/SessionTimeoutModal'
 
 export default function Layout({ children }) {
   return (
@@ -14,6 +15,9 @@ export default function Layout({ children }) {
           </main>
         </div>
       </div>
+
+      {/* Session timeout warning modal — renders globally over everything */}
+      <SessionTimeoutModal />
     </ToastProvider>
   )
 }

@@ -37,3 +37,15 @@
     @apply bg-ink-800 text-white border-l-2 border-flame-400 rounded-l-none;
   }
 }
+
+/* Skeleton shimmer animation */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@layer utilities {
+  .animate-shimmer {
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+}
