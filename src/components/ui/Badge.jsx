@@ -5,6 +5,7 @@ const statusColors = {
   'Clearance':   'bg-flame-50 text-flame-700 ring-flame-200',
   'Cancelled':   'bg-crimson-50 text-crimson-700 ring-crimson-200',
   'Bound':       'bg-sage-100 text-sage-800 ring-sage-300',
+  'Issued':      'bg-ink-100 text-ink-700 ring-ink-200',
 }
 
 const priorityColors = {
