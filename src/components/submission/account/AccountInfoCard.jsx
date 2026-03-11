@@ -2,7 +2,14 @@ import Card from '../../ui/Card'
 import Input from '../../ui/Input'
 import Select from '../../ui/Select'
 
-const legalEntities = ['Individual', 'Corporation', 'Partnership', 'LLC', 'Trust', 'Non-Profit', 'Government Entity']
+const legalEntities = [
+  'Association','Corporation','C Corporation','S Corporation','Domestic Profit Corporation',
+  'Foreign Corporation','Foreign Limited Liability Company','Foreign Limited Partnership',
+  'General Partnership','Governmental Unit','Individual','Joint Venture','Limited Corporation',
+  'Limited Liability Company','Limited Liability Partnership','Limited Partnership',
+  'Nonprofit Corporation','Partnership','Professional Corporation','Religious Organization',
+  'Sole Proprietor','Other',
+]
 const industries = ['Agriculture', 'Construction', 'Education', 'Entertainment', 'Finance', 'Food & Beverage', 'Healthcare', 'Hospitality', 'Manufacturing', 'Professional Services', 'Real Estate', 'Retail', 'Technology', 'Transportation', 'Other']
 
 function SectionRule({ color, children }) {

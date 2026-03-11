@@ -6,11 +6,28 @@ import Input from '../../ui/Input'
 import { deductibleOptions, usStates } from '../../../data/mockData'
 import { ChevronDown, ChevronUp, Plus, Trash2, AlertTriangle } from 'lucide-react'
 
-const occurrenceLimits = ['100,000 CSL', '200,000 CSL', '300,000 CSL', '500,000 CSL', '1,000,000 CSL']
-const aggLimits        = ['200,000 CSL', '400,000 CSL', '600,000 CSL', '1,000,000 CSL', '2,000,000 CSL']
+const occurrenceLimits = [
+  '25,000 CSL', '50,000 CSL', '100,000 CSL', '200,000 CSL', '300,000 CSL', '500,000 CSL',
+  '1,000,000 CSL', '1,500,000 CSL', '2,000,000 CSL', '3,000,000 CSL', '4,000,000 CSL',
+  '5,000,000 CSL', '10,000,000 CSL',
+]
+const aggLimits = [
+  '1,000,000 CSL', '1,500,000 CSL', '2,000,000 CSL', '2,500,000 CSL', '3,000,000 CSL',
+  '4,000,000 CSL', '5,000,000 CSL', '10,000,000 CSL',
+]
 const medPayLimits     = ['5,000', '10,000', '25,000', '50,000', 'Excluded']
 const coverageForms    = ['Occurrence', 'Claims-Made']
-const lossControlOpts  = ['Not Applicable', 'Required - Pre-Bind', 'Required - Post-Bind', 'Recommended']
+const lossControlOpts  = [
+  'Require Loss Control',
+  'Waive Loss Control Requirement',
+  'Not Applicable',
+  'Other Require Loss Control',
+  'Not Required Loss Control',
+  'Require Loss Reduction',
+  'Require Risk Control',
+  'Live Require Risk Control',
+  'Live Require Loss Reduction',
+]
 const sublineOptions   = [
   'Premises/Operations and Products/Completed Operations',
   'Premises/Operations',
@@ -31,6 +48,21 @@ const liquorLicenseOpts  = ['Beer & Wine Only', 'Full Liquor', 'BYOB Permitted',
 const liquorEstabOpts    = ['Bar/Tavern', 'Restaurant', 'Hotel/Motel', 'Liquor Store', 'Nightclub', 'Fraternal/Social Club', 'Catering']
 const ocpOperationsOpts  = ['General Contracting', 'Plumbing', 'Electrical', 'HVAC', 'Roofing', 'Excavation', 'Demolition', 'Other']
 const rrOperationsOpts   = ['Construction', 'Maintenance', 'Repair', 'Demolition', 'Excavation', 'Pipeline', 'Utility Work']
+const personalInjuryLimits = ['100,000', '300,000', '500,000', '1,000,000', '2,000,000']
+const yesNoOpts = ['No', 'Yes']
+const liquorOccurrenceLimits = ['25,000','50,000','100,000','200,000','300,000','500,000','1,000,000','1,500,000','2,000,000','3,000,000','4,000,000','5,000,000','10,000,000']
+const liquorAggLimits = ['1,000,000','1,500,000','2,000,000','2,500,000','3,000,000','4,000,000','5,000,000','10,000,000']
+const ocpOccurrenceLimits = ['25,000','50,000','100,000','200,000','300,000','500,000','1,000,000','1,500,000','2,000,000','3,000,000','4,000,000','5,000,000','10,000,000']
+const ocpAggLimits = ['1,000,000','1,500,000','2,000,000','2,500,000','3,000,000','4,000,000','5,000,000','10,000,000']
+const rrOccurrenceLimits = ['25,000','50,000','100,000','150,000','300,000','500,000','1,000,000','1,500,000','2,000,000']
+const legalEntityOpts    = [
+  'Association','Corporation','C Corporation','S Corporation','Domestic Profit Corporation',
+  'Foreign Corporation','Foreign Limited Liability Company','Foreign Limited Partnership',
+  'General Partnership','Governmental Unit','Individual','Joint Venture','Limited Corporation',
+  'Limited Liability Company','Limited Liability Partnership','Limited Partnership',
+  'Nonprofit Corporation','Partnership','Professional Corporation','Religious Organization',
+  'Sole Proprietor','Other',
+]
 
 function SectionRule({ color, children }) {
   return (
@@ -135,6 +167,7 @@ export default function Step2_RiskCoverage({ data, onChange }) {
   const showOCP      = sl === 'Owners and Contractors'
   const showRailroad = sl === 'Railroad'
   const showSpecial  = showLiquor || showOCP || showRailroad
+  const showProdCompOnly = sl === 'Products/Completed Operations'
 
   return (
     <div className="space-y-5">
@@ -210,27 +243,89 @@ export default function Step2_RiskCoverage({ data, onChange }) {
         </div>
         <SectionRule color="bg-ink-400">Liability Limits</SectionRule>
         <div className="grid grid-cols-2 gap-4">
-          <Select label="Each Occurrence Limit *" required searchable options={occurrenceLimits} value={data.eachOccurrenceLimit} onChange={v => set('eachOccurrenceLimit', v)} />
+          {/* 1. Each Occurrence / Common Cause Limit — label + options vary by subline */}
           <Select
-            label={showOCP ? 'OCP Aggregate Limit *' : 'General Aggregate Limit *'}
-            required searchable options={aggLimits}
-            value={data.generalAggregateLimit} onChange={v => set('generalAggregateLimit', v)}
+            label={showLiquor ? 'Each Common Cause Limit *' : 'Each Occurrence Limit *'}
+            required searchable
+            options={showLiquor ? liquorOccurrenceLimits : showOCP ? ocpOccurrenceLimits : showRailroad ? rrOccurrenceLimits : occurrenceLimits}
+            value={data.eachOccurrenceLimit}
+            onChange={v => set('eachOccurrenceLimit', v)}
           />
+
+          {/* 2. Medical Payments Exclusion for Entire Policy — Prem/Ops only */}
+          {showPremOps && (
+            <Select
+              label="Medical Payments Exclusion for Entire Policy"
+              options={yesNoOpts}
+              value={data.medPayExclusionPolicy || 'No'}
+              onChange={v => set('medPayExclusionPolicy', v)}
+            />
+          )}
+
+          {/* 3. Medical Payments Limit — Prem/Ops only */}
+          {showPremOps && (
+            <Select label="Medical Payments Limit" searchable options={medPayLimits} value={data.medPayLimit} onChange={v => set('medPayLimit', v)} />
+          )}
+
+          {/* 4. Personal & Adv Injury — Select, Prem/Ops only */}
+          {showPremOps && (
+            <Select
+              label="Personal &amp; Adv Injury"
+              searchable
+              options={personalInjuryLimits}
+              value={data.personalAdvInjuryLimit}
+              onChange={v => set('personalAdvInjuryLimit', v)}
+            />
+          )}
+
+          {/* 5. General / Aggregate Limit — hidden for Prod/Comp Only and Railroad */}
+          {!showProdCompOnly && !showRailroad && (
+            <Select
+              label={showLiquor || showOCP ? 'Aggregate Limit *' : 'General Aggregate Limit *'}
+              required searchable
+              options={showLiquor ? liquorAggLimits : showOCP ? ocpAggLimits : aggLimits}
+              value={data.generalAggregateLimit}
+              onChange={v => set('generalAggregateLimit', v)}
+            />
+          )}
+
+          {/* 6. Railroad Aggregate — auto-computed read-only */}
+          {showRailroad && (
+            <div>
+              <label className="form-label mb-1.5">Aggregate Limit *</label>
+              <div className="px-3 py-2 text-sm font-mono font-semibold text-stone-700 bg-stone-50 border border-stone-200 rounded-lg">
+                {(() => {
+                  const raw = String(data.eachOccurrenceLimit || '').replace(/[^0-9]/g, '')
+                  const num = parseInt(raw, 10)
+                  return isNaN(num) ? '—' : (num * 3).toLocaleString('en-US')
+                })()}
+              </div>
+              <p className="text-xs text-stone-400 mt-1">Computed: 3 &times; Each Occurrence</p>
+            </div>
+          )}
+
+          {/* 7. Products/Comp Ops Aggregate */}
           {showProdComp && (
             <Select label="Products/Comp Ops Aggregate" searchable options={aggLimits} value={data.prodCompOpsAggregateLimit} onChange={v => set('prodCompOpsAggregateLimit', v)} />
           )}
-          {!showOCP && !showRailroad && (
-            <Select label="Medical Payments Limit" searchable options={medPayLimits} value={data.medPayLimit} onChange={v => set('medPayLimit', v)} />
-          )}
-          {!showOCP && !showRailroad && (
+
+          {/* 8. Damage to Premises Rented — Prem/Ops only */}
+          {showPremOps && (
             <Input label="Damage to Premises Rented" value={data.damageToRentedPremisesLimit} onChange={e => set('damageToRentedPremisesLimit', e.target.value)} prefix="$" />
           )}
-          {!showOCP && (
-            <Input label="Personal &amp; Adv Injury" value={data.personalAdvInjuryLimit} onChange={e => set('personalAdvInjuryLimit', e.target.value)} prefix="$" />
-          )}
         </div>
-        <div className="mt-4 pt-3 border-t border-stone-100 max-w-xs">
+
+        {/* Coverage Form + Condominium Association side by side */}
+        <div className="mt-4 pt-3 border-t border-stone-100 grid grid-cols-2 gap-4">
           <Select label="Coverage Form" options={coverageForms} value={data.coverageForm} onChange={v => set('coverageForm', v)} />
+          {showPremOps && (
+            <Select
+              label="Condominium Association"
+              options={yesNoOpts}
+              value={data.condominiumAssociation || 'No'}
+              onChange={v => set('condominiumAssociation', v)}
+            />
+          )}
         </div>
       </Card>
 
@@ -345,6 +440,16 @@ export default function Step2_RiskCoverage({ data, onChange }) {
                 className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-ink-400 focus:border-ink-400 bg-stone-50 placeholder-stone-300 resize-none"
               />
             </div>
+            <SectionRule color="bg-ink-300">OCP Named Insured Details</SectionRule>
+            <div className="grid grid-cols-2 gap-4">
+              <Input label="Name" required value={data.ocpNamedInsuredName || ''} onChange={e => set('ocpNamedInsuredName', e.target.value)} placeholder="Full legal name" />
+              <Select label="Legal Entity" options={legalEntityOpts} value={data.ocpNamedInsuredLegalEntity} onChange={v => set('ocpNamedInsuredLegalEntity', v)} />
+              <Input label="Address Line 1" required value={data.ocpNamedInsuredAddr1 || ''} onChange={e => set('ocpNamedInsuredAddr1', e.target.value)} placeholder="Street address" />
+              <Input label="Address Line 2" value={data.ocpNamedInsuredAddr2 || ''} onChange={e => set('ocpNamedInsuredAddr2', e.target.value)} placeholder="Suite, unit, etc." />
+              <Input label="City" required value={data.ocpNamedInsuredCity || ''} onChange={e => set('ocpNamedInsuredCity', e.target.value)} />
+              <Select label="State" required searchable options={usStates} value={data.ocpNamedInsuredState} onChange={v => set('ocpNamedInsuredState', v)} />
+              <Input label="Zip" required value={data.ocpNamedInsuredZip || ''} onChange={e => set('ocpNamedInsuredZip', e.target.value)} placeholder="00000" />
+            </div>
           </div>
         </Card>
       )}
@@ -412,6 +517,16 @@ export default function Step2_RiskCoverage({ data, onChange }) {
               </div>
               <Toggle checked={!!data.rrWithin50Feet} onChange={v => set('rrWithin50Feet', v)} />
             </div>
+            <SectionRule color="bg-ink-300">Railroad Named Insured Details</SectionRule>
+            <div className="grid grid-cols-2 gap-4">
+              <Input label="Name" required value={data.rrNamedInsuredName || ''} onChange={e => set('rrNamedInsuredName', e.target.value)} placeholder="Full legal name" />
+              <Select label="Legal Entity" options={legalEntityOpts} value={data.rrNamedInsuredLegalEntity} onChange={v => set('rrNamedInsuredLegalEntity', v)} />
+              <Input label="Address Line 1" required value={data.rrNamedInsuredAddr1 || ''} onChange={e => set('rrNamedInsuredAddr1', e.target.value)} placeholder="Street address" />
+              <Input label="Address Line 2" value={data.rrNamedInsuredAddr2 || ''} onChange={e => set('rrNamedInsuredAddr2', e.target.value)} placeholder="Suite, unit, etc." />
+              <Input label="City" required value={data.rrNamedInsuredCity || ''} onChange={e => set('rrNamedInsuredCity', e.target.value)} />
+              <Select label="State" required searchable options={usStates} value={data.rrNamedInsuredState} onChange={v => set('rrNamedInsuredState', v)} />
+              <Input label="Zip" required value={data.rrNamedInsuredZip || ''} onChange={e => set('rrNamedInsuredZip', e.target.value)} placeholder="00000" />
+            </div>
           </div>
         </Card>
       )}
@@ -456,9 +571,10 @@ export default function Step2_RiskCoverage({ data, onChange }) {
               )}
               {showLiquor && (
                 <tr>
-                  <td className="px-4 py-3 text-xs font-semibold text-stone-600 whitespace-nowrap">Liquor Liability</td>
-                  <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.liquorBI} onChange={v => set('liquorBI', v)} /></td>
-                  <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.liquorPD} onChange={v => set('liquorPD', v)} /></td>
+                  <td className="px-4 py-3 text-xs font-semibold text-stone-600 whitespace-nowrap">Liquor</td>
+                  <td className="px-3 py-2" colSpan={2}>
+                    <Select searchable options={deductibleOptions} value={data.liquorDeductible} onChange={v => set('liquorDeductible', v)} />
+                  </td>
                 </tr>
               )}
               {showOCP && (
@@ -524,66 +640,84 @@ export default function Step2_RiskCoverage({ data, onChange }) {
         </div>
       </Card>
 
-      {/* ── Loss Control — collapsible ── */}
-      <CollapsibleSection title="Loss Control Requirements">
-        <div className="pt-4 space-y-3">
-          <Select
-            label="Post-Bind Loss Control Override"
-            options={lossControlOpts}
-            value={data.postBindLossControlOverride}
-            onChange={v => set('postBindLossControlOverride', v)}
-          />
-          <div className="space-y-2">
-            {[
-              'Premises/Operations and Products/Completed Operations',
-              'Products/Completed Operations',
-              'Liquor Liability',
-              'Owners and Contractors',
-              'Railroad',
-            ].map(sec => (
-              <div key={sec} className="flex items-center justify-between px-4 py-3 rounded-lg bg-stone-25 border border-stone-100">
-                <span className="text-sm text-stone-700">{sec}</span>
-                <span className="text-xs text-stone-400 font-medium">Not Applicable</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </CollapsibleSection>
+      {/* Loss Control Requirements collapsible removed — Post-Bind Loss Control Override lives at LOB tab level */}
 
       {/* ── Coverage Flags — collapsible with active badge ── */}
       <CollapsibleSection title="Coverage Options &amp; Flags" badge={activeFlagCount}>
         <div className="pt-4 grid grid-cols-2 gap-x-8 gap-y-3">
+          {/* Always-visible flags */}
           {[
-            ['governmentalSubdivision',        'Governmental Subdivision'],
-            ['limitedProductWithdrawal',        'Limited Product Withdrawal'],
-            ['sizeOfRiskRating',                'Size Of Risk Rating'],
-            ['stopGapCoverage',                 'Stop Gap Coverage'],
-            ['medPayExclusion',                 'Med Pay Exclusion'],
-            ['cyberIncidentLiability',          'Cyber Incident Liability'],
-            ['lossOfElectronicData',            'Loss Of Electronic Data'],
-            ['experienceRating',                'Experience Rating'],
-            ['scheduleRating',                  'Schedule Rating'],
-            ['acceptTerrorismCoverage',         'Accept Terrorism Coverage'],
-            ['compositeRating',                 'Composite Rating'],
-            ['limitedCoverageUnmannedAircraft', 'Unmanned Aircraft'],
-            ['tripTerminatesEarly',             'TRIP Terminates Early'],
-            ['ndPesticideApplicator',           'ND Pesticide Applicator'],
+            ['stopGapCoverage',        'Stop Gap Coverage'],
+            ['medPayExclusion',        'Med Pay Exclusion'],
+            ['cyberIncidentLiability', 'Cyber Incident Liability'],
+            ['lossOfElectronicData',   'Loss Of Electronic Data'],
+            ['experienceRating',       'Experience Rating'],
+            ['scheduleRating',         'Schedule Rating'],
+            ['acceptTerrorismCoverage','Accept Terrorism Coverage'],
+            ['compositeRating',        'Composite Rating'],
+            ['tripTerminatesEarly',    'TRIP Terminates Early'],
+            ['ndPesticideApplicator',  'ND Pesticide Applicator'],
           ].map(([k, label]) => (
             <div key={k} className="flex items-center justify-between py-1">
               <span className="text-sm text-stone-700">{label}</span>
               <Toggle checked={!!data[k]} onChange={v => set(k, v)} />
             </div>
           ))}
+
+          {/* Prem/Ops only */}
+          {showPremOps && (
+            <div className="flex items-center justify-between py-1">
+              <span className="text-sm text-stone-700">Governmental Subdivision</span>
+              <Toggle checked={!!data.governmentalSubdivision} onChange={v => set('governmentalSubdivision', v)} />
+            </div>
+          )}
+          {showPremOps && (
+            <div className="flex items-center justify-between py-1">
+              <span className="text-sm text-stone-700">Unmanned Aircraft</span>
+              <Toggle checked={!!data.limitedCoverageUnmannedAircraft} onChange={v => set('limitedCoverageUnmannedAircraft', v)} />
+            </div>
+          )}
+
+          {/* Prod/Comp sublines only */}
+          {showProdComp && (
+            <div className="flex items-center justify-between py-1">
+              <span className="text-sm text-stone-700">Limited Product Withdrawal</span>
+              <Toggle checked={!!data.limitedProductWithdrawal} onChange={v => set('limitedProductWithdrawal', v)} />
+            </div>
+          )}
+
+          {/* Non-special sublines only */}
+          {!showSpecial && (
+            <div className="flex items-center justify-between py-1">
+              <span className="text-sm text-stone-700">Size Of Risk Rating</span>
+              <Toggle checked={!!data.sizeOfRiskRating} onChange={v => set('sizeOfRiskRating', v)} />
+            </div>
+          )}
         </div>
       </CollapsibleSection>
 
       {/* ── Minimum Premium — collapsible ── */}
       <CollapsibleSection title="Minimum Premium">
-        <div className="pt-4 grid grid-cols-2 gap-4">
-          <Input label="Premises/Ops Minimum"       value={data.premOpsMinimum}         onChange={e => set('premOpsMinimum', e.target.value)}         prefix="$" />
-          <Input label="Products/Comp Ops Minimum"  value={data.prodCompOpsMinimum}     onChange={e => set('prodCompOpsMinimum', e.target.value)}     prefix="$" />
-          <Input label="Special Combined Minimum"   value={data.specialCombinedMinimum} onChange={e => set('specialCombinedMinimum', e.target.value)} prefix="$" />
-          <Input label="Policy Minimum"             value={data.policyMinimum}          onChange={e => set('policyMinimum', e.target.value)}          prefix="$" />
+        <div className="pt-4 space-y-1">
+          {showPremOps && (
+            <p className="text-sm text-stone-500 py-1">Premises/Ops Premium To Reach Minimum</p>
+          )}
+          {showProdComp && (
+            <p className="text-sm text-stone-500 py-1">Products/Comp Ops Premium To Reach Minimum</p>
+          )}
+          {showPremOps && showProdComp && (
+            <p className="text-sm text-stone-500 py-1">Special Combined Premium To Reach Minimum</p>
+          )}
+          {showLiquor && (
+            <p className="text-sm text-stone-500 py-1">Liquor Premium To Reach Minimum</p>
+          )}
+          {showOCP && (
+            <p className="text-sm text-stone-500 py-1">Owners and Contractors Premium To Reach Minimum</p>
+          )}
+          {showRailroad && (
+            <p className="text-sm text-stone-500 py-1">Railroad Premium To Reach Minimum</p>
+          )}
+          <p className="text-sm text-stone-500 py-1">Policy Premium To Reach Minimum</p>
         </div>
       </CollapsibleSection>
 

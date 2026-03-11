@@ -249,3 +249,205 @@ Use **March 9, 2026** as "today" for all date calculations (need-by chips, expir
 - LOB: `const lob = submission.linesOfBusiness?.[0] || 'General Liability'` — read-only display
 - Primary State: `const primaryEntry = glPolicy.stateSchedule?.find(s => s.isPrimary) || glPolicy.stateSchedule?.[0]` — read-only display
 - These are NEVER dropdowns — always static text from submission data.
+
+---
+
+## Step 2 Subline Field Parity — Pending Implementation
+
+### Subline 1: Premises/Operations and Products/Completed Operations (STANDARD)
+
+Changes needed to `Step2_RiskCoverage.jsx`:
+
+**Add constants:**
+- `const personalInjuryLimits = ['100,000', '300,000', '500,000', '1,000,000', '2,000,000']`
+- `const yesNoOpts = ['No', 'Yes']`
+
+**Policy Limits card — field order (match old Solartis):**
+1. Each Occurrence Limit * (Select)
+2. Medical Payments Exclusion for Entire Policy (Yes/No Select) — shown before Med Pay Limit, hide for OCP/Railroad
+3. Medical Payments Limit (Select, hide for OCP/Railroad)
+4. Personal and Advertising Injury Limit (change from `<Input>` to `<Select options={personalInjuryLimits}>`, hide for OCP)
+5. General Aggregate Limit * (Select)
+6. Products/Comp Ops Aggregate (Select, conditional on showProdComp)
+7. Damage to Premises Rented (Input, hide for OCP/Railroad) — keep as-is
+
+**After Coverage Form — add:**
+- Condominium Association (Yes/No Select) — key: `condominiumAssociation`, default 'No'
+- Change Coverage Form + Condominium Association layout: `grid grid-cols-2 gap-4` (remove `max-w-xs`)
+
+**Data keys:**
+- Med Pay Exclusion: `medPayExclusionPolicy` (separate from existing `medPayExclusion` toggle in flags)
+- Condominium Association: `condominiumAssociation`
+- Personal Injury Limit: existing `personalAdvInjuryLimit` key, just change to Select
+
+### Subline 2: Premises/Operations ONLY
+
+Differences from Subline 1 (additional conditional logic needed):
+
+- **Limited Product Withdrawal Coverage** — only show when `showProdComp` is true (hide for Prem/Ops only)
+  - Currently it's always visible in Coverage Flags collapsible — needs `showProdComp` guard
+- **Minimum Premium** — only show `premOpsMinimum` + `policyMinimum`; hide `prodCompOpsMinimum` + `specialCombinedMinimum` when `!showProdComp`
+- Products/Comp Ops Aggregate: already hidden by `showProdComp` ✓
+- Prod/Comp deductible rows: already hidden by `showProdComp` ✓
+
+**Implementation note:** In Coverage Flags toggles array, wrap `limitedProductWithdrawal` in `{showProdComp && ...}` or conditionally exclude it. In Minimum Premium collapsible, wrap Prod/Comp and Special Combined inputs with `{showProdComp && ...}`.
+
+### Subline 3: Products/Completed Operations ONLY
+
+Key differences from Subline 1 reveal additional conditional logic needed:
+
+**New flag to add:**
+```js
+const showProdCompOnly = sl === 'Products/Completed Operations'
+```
+
+**Fields that only show when `showPremOps` (= Prem/Ops or Prem/Ops+Prod/Comp):**
+- Governmental Subdivision — currently always visible in Coverage Flags; add `showPremOps` guard
+- Medical Payments Exclusion for Entire Policy — use `showPremOps` (not just `!showOCP && !showRailroad`)
+- Medical Payments Limit — use `showPremOps`
+- Personal and Advertising Injury Limit — use `showPremOps`
+- Condominium Association — use `showPremOps`
+- Limited Coverage For Designated Unmanned Aircraft — use `showPremOps`
+
+**Aggregate Limit logic (critical change):**
+- "General Aggregate Limit" → hide when Prod/Comp only → condition: `!showProdCompOnly` (show for all except Prod/Comp only)
+- "Products/Comp Ops Aggregate" → show when `showProdComp` (already correct) — for Prod/Comp only, this is the ONLY aggregate shown
+
+**Minimum Premium per subline:**
+- `premOpsMinimum` → show when `showPremOps`
+- `prodCompOpsMinimum` → show when `showProdComp`
+- `specialCombinedMinimum` → show when `showPremOps && showProdComp` (Prem/Ops + Prod/Comp combined only)
+- `policyMinimum` → always show
+
+**Note from user:** Common fields (State, Revenue, OSHA, Commission, etc.) are fixed — only subline-specific sections adapt when subline changes. This is already the component's pattern.
+
+### Subline 4: Liquor
+
+Critical differences from standard sublines:
+
+**Limit label changes (when `showLiquor`):**
+- "Each Occurrence Limit" → **"Each Common Cause Limit"** (no CSL suffix)
+- "General Aggregate Limit" → **"Aggregate Limit"** (no CSL suffix)
+- Need separate constants: `liquorOccurrenceLimits` (same numbers as occurrenceLimits but without ' CSL') and `liquorAggLimits` (same numbers as aggLimits but without ' CSL')
+
+**Deductible:** Single "Deductible" field (NOT separate BI/PD columns)
+- Current code has showLiquor row with BI + PD columns — change to single dropdown
+- New key: `liquorDeductible` (replace `liquorBI` + `liquorPD`)
+
+**Minimum Premium label:** "Liquor Premium To Reach Minimum" (key: `liquorMinimum`)
+
+**Additional conditional logic revealed:**
+- **Size Of Risk Rating** — absent for Liquor → condition must be `!showSpecial` (show for all 3 standard sublines, hide for Liquor/OCP/Railroad)
+- **Damage to Premises Rented** — absent for Liquor → change condition from `!showOCP && !showRailroad` to `showPremOps` (since it only appears for Prem/Ops sublines)
+
+**Fields present in Liquor (same as standard):**
+- Post-Bind Loss Control Override, Subline, Coverage Form, Legal Entity ✓
+- Experience Rating, Schedule Rating, TRIP, Accept Terrorism, Composite Rating ✓
+- Liquor Liability Details card (already implemented) ✓
+
+**Fields absent for Liquor (already handled or need fix):**
+- Governmental Subdivision → `showPremOps` ✓
+- Limited Product Withdrawal → `showProdComp` ✓
+- Size Of Risk Rating → change to `!showSpecial` (NEW fix)
+- Medical Payments fields → `showPremOps` ✓ (already `!showOCP && !showRailroad`, add `&& !showLiquor` OR use `showPremOps`)
+- Personal & Adv Injury → `showPremOps` ✓
+- Condominium Association → `showPremOps` ✓
+- Damage to Rented Premises → change to `showPremOps` (NEW fix)
+
+### Subline 5: OCP (Owners and Contractors)
+
+Critical differences from standard sublines:
+
+**Limit label changes (when `showOCP`):**
+- "Each Occurrence Limit" → **"Each Occurrence Limit"** (no CSL suffix — same as Liquor pattern)
+- "OCP Aggregate Limit" → **"Aggregate Limit"** (no CSL suffix — already renamed but needs no-CSL values)
+- Need separate constants: `ocpOccurrenceLimits` and `ocpAggLimits` (same numbers but without ' CSL')
+- The numbers appear to be the same range as standard limits
+
+**Global Legal Entity — EXPANDED list** (replace current 7-item  used everywhere — applies to ALL sublines, clearance, account, Named Insured cards everywhere):
+```js
+const legalEntityOpts = [
+  'Association', 'Corporation', 'C Corporation', 'S Corporation', 'Domestic Profit Corporation',
+  'Foreign Corporation', 'Foreign Limited Liability Company', 'Foreign Limited Partnership',
+  'General Partnership', 'Governmental Unit', 'Individual', 'Joint Venture', 'Limited Corporation',
+  'Limited Liability Company', 'Limited Liability Partnership', 'Limited Partnership',
+  'Nonprofit Corporation', 'Partnership', 'Professional Corporation', 'Religious Organization',
+  'Sole Proprietor', 'Other',
+]
+```
+Single global constant — no per-subline variants needed.
+
+**Minimum Premium label:** "Owners and Contractors Premium To Reach Minimum" (key: `ocpMinimum`) + `policyMinimum`
+
+**Fields present for OCP (same as standard):**
+- Post-Bind Loss Control Override, Subline, Coverage Form ✓
+- OCP Named Insured Details (Name, Address 1/2, City, State, Zip, Legal Entity) — already implemented ✓
+- Experience Rating, Schedule Rating, TRIP, Accept Terrorism, Composite Rating ✓
+- OCP Project Details card (already implemented) ✓
+
+**Fields absent for OCP (already handled):**
+- Med Pay, Damage to Rented, Personal & Adv Injury → already guarded in previous session ✓
+- Products/Comp Ops Aggregate → `showProdComp` ✓
+- Deductible rows → already have OCP-specific BI+PD rows ✓
+
+### Subline 6: Railroad
+
+Critical differences from standard sublines:
+
+**Limit label changes (when `showRailroad`):**
+- "Each Occurrence Limit" (no CSL suffix)
+- "Aggregate Limit" (no CSL suffix)
+- **Different occurrence limit values** (not same as standard):
+  ```js
+  const rrOccurrenceLimits = ['25,000','50,000','100,000','150,000','300,000','500,000','1,000,000','1,500,000','2,000,000']
+  ```
+  Note: 150,000 (not 200,000), stops at 2,000,000 (no 3M/4M/5M/10M)
+- **Aggregate Limit is AUTO-COMPUTED (read-only display)** — always 3× the Each Occurrence Limit (e.g. 1,000,000 → 3,000,000; 2,000,000 → 6,000,000). Render as disabled input showing the computed value.
+
+**Minimum Premium label:** "Railroad Premium To Reach Minimum" (key: `rrMinimum`) + `policyMinimum`
+
+**Named Insured Details:** Same "OCP/Railroad Named Insured Details" section heading for both OCP and Railroad.
+
+**Fields present for Railroad (same as OCP):**
+- Post-Bind Loss Control Override, Subline, Coverage Form ✓
+- OCP/Railroad Named Insured Details (Name, Address 1/2, City, State, Zip, Legal Entity) ✓
+- Experience Rating, Schedule Rating, TRIP, Accept Terrorism, Composite Rating ✓
+- Railroad Project Details card (already implemented) ✓
+
+**Fields absent for Railroad (already handled):**
+- Med Pay, Damage to Rented, Personal & Adv Injury → already guarded ✓
+
+---
+
+### Global: Post-Bind Loss Control Override — FULL OPTIONS
+
+Replace current options (likely just 'Not Applicable') with full 9-item list:
+```js
+const lossControlOpts = [
+  'Require Loss Control',
+  'Waive Loss Control Requirement',
+  'Not Applicable',
+  'Other Require Loss Control',
+  'Not Required Loss Control',
+  'Require Loss Reduction',
+  'Require Risk Control',
+  'Live Require Risk Control',
+  'Live Require Loss Reduction',
+]
+```
+
+---
+
+### Global UI Changes (from final review)
+
+**Minimum Premium section:**
+- Old system: labels only (no editable inputs) — just text showing the label names
+- New system: currently has dollar `$` input fields
+- **Change: Remove input fields, render just the label text rows (read-only display)**
+- Per-subline labels still apply (e.g. "Railroad Premium To Reach Minimum", "Liquor Premium To Reach Minimum", etc.)
+
+**Loss Control Requirements collapsible:**
+- Old system: Post-Bind Loss Control Override is a top-level field (already at top of form in new system)
+- The "Loss Control Requirements" collapsible in new system is a duplicate/unnecessary section
+- **Remove the Loss Control Requirements collapsible entirely**
+- Post-Bind Loss Control Override stays as top-level field with correct 9-option list
