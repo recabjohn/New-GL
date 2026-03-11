@@ -22,8 +22,15 @@ export default function Select({
         panelRef.current && !panelRef.current.contains(e.target)
       ) setOpen(false)
     }
+    const closeOnScroll = () => setOpen(false)
     document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
+    window.addEventListener('scroll', closeOnScroll, true)
+    window.addEventListener('resize', closeOnScroll)
+    return () => {
+      document.removeEventListener('mousedown', handler)
+      window.removeEventListener('scroll', closeOnScroll, true)
+      window.removeEventListener('resize', closeOnScroll)
+    }
   }, [])
 
   const handleToggle = () => {

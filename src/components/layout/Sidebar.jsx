@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { submissions } from '../../data/mockData'
 import { useToast } from '../ui/Toast'
+import { useAuth } from '../../context/AuthContext'
 
 // ---------------------------------------------------------------------------
 // Nav config — badgeKey wires to runtime-computed counts
@@ -50,6 +51,7 @@ const BOTTOM_ITEMS = [
 function UserDropdown({ onClose }) {
   const navigate = useNavigate()
   const toast = useToast()
+  const { logout } = useAuth()
   const ref = useRef(null)
   const [showViewPicker, setShowViewPicker] = useState(false)
 
@@ -76,7 +78,8 @@ function UserDropdown({ onClose }) {
   }
 
   const handleSignOut = () => {
-    toast.info('Signing out...', 'You will be redirected shortly.')
+    logout()
+    navigate('/login', { replace: true })
     onClose()
   }
 
