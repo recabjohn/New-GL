@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   ChevronRight, FileText, ExternalLink, Paperclip, MessageSquare,
-  CheckCircle2, ShieldCheck, XCircle, Send, Plus, Check, Info, AlertTriangle, Mail, FileCheck2,
+  CheckCircle2, ShieldCheck, XCircle, Send, Plus, Check, Info, AlertTriangle, Mail, FileCheck2, Printer,
 } from 'lucide-react'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -81,30 +81,20 @@ function SendToAgentModal({ open, onClose }) {
     onClose()
   }
 
-  if (!open) return null
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-stone-900/50 backdrop-blur-sm" onClick={handleClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-auto flex flex-col max-h-[90vh]">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
-          <div className="flex items-center gap-2">
-            <Mail className="h-4 w-4 text-ink-600" />
-            <h3 className="text-base font-semibold text-stone-900">Send to Agent</h3>
-          </div>
-          <button
-            type="button"
-            onClick={handleClose}
-            disabled={sending}
-            className="p-1 rounded-md text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors disabled:opacity-40"
-          >
-            <XCircle className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="overflow-y-auto flex-1 px-6 py-5 space-y-4">
+    <Modal open={open} onClose={handleClose} title="Send to Agent" size="md"
+      footer={
+        <>
+          <Button variant="ghost" size="sm" onClick={handleClose} disabled={sending}>
+            Cancel
+          </Button>
+          <Button variant="cta" size="sm" icon={Send} loading={sending} onClick={handleSend}>
+            {sending ? 'Sending...' : 'Send'}
+          </Button>
+        </>
+      }
+    >
+        <div className="space-y-4">
           {/* To */}
           <div>
             <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">To</label>
@@ -172,17 +162,7 @@ function SendToAgentModal({ open, onClose }) {
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-stone-100 bg-stone-25 rounded-b-2xl flex justify-end gap-2">
-          <Button variant="ghost" size="sm" onClick={handleClose} disabled={sending}>
-            Cancel
-          </Button>
-          <Button variant="cta" size="sm" icon={Send} loading={sending} onClick={handleSend}>
-            {sending ? 'Sending...' : 'Send'}
-          </Button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   )
 }
 
@@ -212,25 +192,27 @@ function BindModal({ open, onClose, onConfirm }) {
     onClose()
   }
 
-  if (!open) return null
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-stone-900/50 backdrop-blur-sm" onClick={handleClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md">
-        {/* Header */}
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-stone-100">
-          <div className="w-9 h-9 rounded-full bg-sage-100 flex items-center justify-center shrink-0">
-            <ShieldCheck className="h-5 w-5 text-sage-600" />
-          </div>
-          <div>
-            <h3 className="text-base font-semibold text-stone-900">Bind Policy</h3>
-            <p className="text-xs text-stone-500 font-mono">Q00-0014658-00 · Effective 10/01/2026</p>
-          </div>
-        </div>
-
-        {/* Body */}
-        <div className="px-6 py-5 space-y-5">
+    <Modal open={open} onClose={handleClose} title="Bind Policy" subtitle="Q00-0014658-00 · Effective 10/01/2026" size="sm"
+      footer={
+        <>
+          <Button variant="secondary" size="sm" onClick={handleClose} disabled={binding}>
+            Cancel
+          </Button>
+          <Button
+            variant="cta"
+            size="sm"
+            icon={ShieldCheck}
+            loading={binding}
+            onClick={handleConfirm}
+            disabled={!canBind || binding}
+          >
+            Bind Policy
+          </Button>
+        </>
+      }
+    >
+        <div className="space-y-5">
           {/* Policy Effective Date read-only */}
           <div>
             <label className="form-label mb-1">Policy Effective Date</label>
@@ -241,8 +223,9 @@ function BindModal({ open, onClose, onConfirm }) {
 
           {/* Payment Plan */}
           <div>
-            <label className="form-label mb-1">Payment Plan <span className="text-crimson-500">*</span></label>
+            <label htmlFor="bind-payment-plan" className="form-label mb-1">Payment Plan <span className="text-crimson-500">*</span></label>
             <select
+              id="bind-payment-plan"
               value={paymentPlan}
               onChange={e => setPaymentPlan(e.target.value)}
               className="form-input"
@@ -255,8 +238,9 @@ function BindModal({ open, onClose, onConfirm }) {
           </div>
 
           {/* Surplus Lines Acknowledgment */}
-          <label className="flex items-start gap-3 cursor-pointer group">
+          <label htmlFor="bind-surplus-ack" className="flex items-start gap-3 cursor-pointer group">
             <input
+              id="bind-surplus-ack"
               type="checkbox"
               checked={surplusAck}
               onChange={e => setSurplusAck(e.target.checked)}
@@ -273,11 +257,12 @@ function BindModal({ open, onClose, onConfirm }) {
           </label>
 
           {/* UW Certification */}
-          <label className={[
+          <label htmlFor="bind-uw-cert" className={[
             'flex items-start gap-3 cursor-pointer group rounded-xl border p-4 transition-colors',
             uwCert ? 'bg-ink-50 border-ink-200' : 'bg-stone-50 border-stone-200 hover:border-ink-200',
           ].join(' ')}>
             <input
+              id="bind-uw-cert"
               type="checkbox"
               checked={uwCert}
               onChange={e => setUwCert(e.target.checked)}
@@ -293,25 +278,7 @@ function BindModal({ open, onClose, onConfirm }) {
             </div>
           </label>
         </div>
-
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-stone-100 flex justify-end gap-2">
-          <Button variant="secondary" size="sm" onClick={handleClose} disabled={binding}>
-            Cancel
-          </Button>
-          <Button
-            variant="cta"
-            size="sm"
-            icon={ShieldCheck}
-            loading={binding}
-            onClick={handleConfirm}
-            disabled={!canBind || binding}
-          >
-            Bind Policy
-          </Button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   )
 }
 
@@ -328,31 +295,10 @@ function IssueModal({ open, onClose, onConfirm, onPreview }) {
     onConfirm()
   }
 
-  if (!open) return null
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-stone-900/50 backdrop-blur-sm" onClick={!issuing ? onClose : undefined} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-stone-100">
-          <h3 className="text-base font-semibold text-stone-900">Issue Policy</h3>
-          <p className="text-xs text-stone-500 mt-0.5">This action will finalize policy issuance.</p>
-        </div>
-
-        {/* Body */}
-        <div className="px-6 py-5 space-y-4">
-          <div className="rounded-lg bg-stone-50 border border-stone-200 px-4 py-3 text-sm text-stone-600 leading-relaxed">
-            Please click <strong className="font-semibold text-stone-800">Issue</strong> to continue the issuance process. A <strong className="font-semibold text-stone-800">PolicyIssuance</strong> document will be generated automatically.
-          </div>
-          <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3.5">
-            <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-1">Assigned Policy Number</p>
-            <p className="font-mono text-base font-bold text-amber-900">SSIC-GLN02-0014019-26</p>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-stone-100 flex items-center gap-2">
+    <Modal open={open} onClose={!issuing ? onClose : undefined} title="Issue Policy" subtitle="This action will finalize policy issuance." size="sm"
+      footer={
+        <>
           <Button variant="secondary" size="sm" onClick={onPreview} disabled={issuing}>
             Preview Issuance
           </Button>
@@ -363,9 +309,19 @@ function IssueModal({ open, onClose, onConfirm, onPreview }) {
           <Button variant="cta" size="sm" icon={FileCheck2} loading={issuing} onClick={handleIssue}>
             Issue
           </Button>
+        </>
+      }
+    >
+        <div className="space-y-4">
+          <div className="rounded-lg bg-stone-50 border border-stone-200 px-4 py-3 text-sm text-stone-600 leading-relaxed">
+            Please click <strong className="font-semibold text-stone-800">Issue</strong> to continue the issuance process. A <strong className="font-semibold text-stone-800">PolicyIssuance</strong> document will be generated automatically.
+          </div>
+          <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3.5">
+            <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-1">Assigned Policy Number</p>
+            <p className="font-mono text-base font-bold text-amber-900">SSIC-GLN02-0014019-26</p>
+          </div>
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 }
 
@@ -677,18 +633,22 @@ function SummaryTab({ onBind, onIssue, bound, issued, binderDoc, policyDoc, decl
                   <div className="rounded-lg bg-crimson-50 border border-crimson-200 p-3 space-y-2">
                     <p className="text-xs font-semibold text-crimson-700">Confirm decline?</p>
                     <div className="flex gap-2">
-                      <button
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        className="flex-1 justify-center"
                         onClick={handleDeclineConfirm}
-                        className="flex-1 text-xs font-semibold bg-crimson-600 text-white rounded-lg py-1.5 hover:bg-crimson-700 transition-colors"
                       >
                         Yes, Decline
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="flex-1 justify-center"
                         onClick={() => setDeclining(false)}
-                        className="flex-1 text-xs font-semibold bg-white border border-stone-200 text-stone-600 rounded-lg py-1.5 hover:bg-stone-50 transition-colors"
                       >
                         Cancel
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -1279,7 +1239,7 @@ export default function QuoteSummaryPage() {
       <div className="bg-white rounded-xl border border-stone-200 shadow-card overflow-hidden">
         <div className="h-1 bg-sage-500" />
         <div className="px-6 py-4">
-          <nav className="flex items-center gap-1 text-xs text-stone-400 mb-3">
+          <nav className="flex items-center gap-1 text-xs text-stone-400 mb-3 print-hide">
             <button onClick={() => navigate('/')} className="hover:text-ink-600 transition-colors">
               Dashboard
             </button>
@@ -1320,6 +1280,9 @@ export default function QuoteSummaryPage() {
                 <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Total Premium</p>
                 <p className="text-2xl font-black font-mono text-ink-800">${q.totalPremium.toFixed(2)}</p>
               </div>
+              <Button variant="ghost" size="sm" icon={Printer} onClick={() => window.print()} className="print-hide">
+                Print
+              </Button>
               <Button variant="secondary" size="sm" icon={Mail} onClick={() => setSendModalOpen(true)}>
                 Send to Agent
               </Button>
@@ -1348,13 +1311,13 @@ export default function QuoteSummaryPage() {
         </div>
 
         {/* Tab bar */}
-        <div className="flex border-t border-stone-100 overflow-x-auto">
+        <div className="flex border-t border-stone-100 overflow-x-auto print-hide">
           {TABS.map(t => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
               className={[
-                'px-6 py-3.5 text-sm font-medium transition-colors border-b-2 -mb-px whitespace-nowrap',
+                'px-6 py-3.5 text-sm font-medium transition-all duration-200 border-b-2 -mb-px whitespace-nowrap',
                 tab === t.id
                   ? 'text-ink-800 border-ink-700'
                   : 'text-stone-500 border-transparent hover:text-stone-700 hover:bg-stone-50',

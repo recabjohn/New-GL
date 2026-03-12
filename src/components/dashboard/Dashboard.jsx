@@ -365,6 +365,13 @@ export default function Dashboard() {
               </button>
             )
           })}
+          {/* Pipeline total */}
+          <div className="flex items-center justify-center gap-2 px-4 py-3 bg-stone-25">
+            <div className="text-xl font-black leading-none text-stone-800">
+              {PIPELINE.reduce((sum, s) => sum + s.count, 0)}
+            </div>
+            <div className="text-[11px] font-semibold text-stone-400">Total</div>
+          </div>
         </div>
         {activeStage && (
           <div className="px-4 py-1.5 bg-ink-50 border-t border-ink-100 flex items-center justify-between">

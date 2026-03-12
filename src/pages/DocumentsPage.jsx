@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { useToast } from '../components/ui/Toast'
 import Button from '../components/ui/Button'
-import { quote } from '../data/mockData'
+import { quote, ratingWorksheet, submissions, account } from '../data/mockData'
 
 // ── Document base data ────────────────────────────────────────────────────────
 
@@ -95,6 +95,157 @@ function withinRange(dateStr, range) {
   return true
 }
 
+// ── Quote Letter Preview (rendered HTML "PDF") ────────────────────────────────
+
+function QuoteLetterPreview({ doc }) {
+  // Find the matching submission to pull insured info
+  const sub = submissions.find(s => s.submissionNumber === doc.submission) || submissions[0]
+  const cls = ratingWorksheet.locations[0]?.classifications[0]
+  const limits = ratingWorksheet.limits
+  const isRatingSheet = doc.type === 'RatingWorksheet'
+
+  return (
+    <div className="bg-white border border-stone-200 rounded-lg shadow-sm p-8 text-[11px] leading-relaxed text-stone-800 font-mono print-content">
+      {/* Letterhead */}
+      <div className="flex items-start justify-between border-b border-stone-300 pb-4 mb-6">
+        <div>
+          <p className="text-base font-black text-ink-700 tracking-tight font-sans">SOLARIS</p>
+          <p className="text-[10px] text-stone-400 font-sans">General Liability Policy Administration</p>
+        </div>
+        <div className="text-right text-[10px] text-stone-500">
+          <p>Document Generated: {doc.date}</p>
+          <p>By: {doc.generatedBy}</p>
+        </div>
+      </div>
+
+      {/* Document Title */}
+      <h3 className="text-sm font-bold text-stone-900 mb-4 font-sans uppercase tracking-wide">
+        {isRatingSheet ? 'Rating Worksheet' : 'Quote Proposal'}
+      </h3>
+
+      {/* Submission / Insured Info */}
+      <div className="grid grid-cols-2 gap-x-8 gap-y-1.5 mb-6 border border-stone-200 rounded p-4 bg-stone-50/50">
+        <Row label="Submission #" value={doc.submission} />
+        <Row label="Quote #" value={quote.id} />
+        <Row label="Named Insured" value={sub.insuredName} />
+        <Row label="DBA" value={sub.dba || '—'} />
+        <Row label="Agency" value={sub.agencyName} />
+        <Row label="Agent" value={sub.agentName} />
+        <Row label="Effective" value={sub.effectiveDate || quote.effectiveDate} />
+        <Row label="Expiration" value={sub.expirationDate || quote.expirationDate} />
+        <Row label="State" value={sub.state} />
+        <Row label="Transaction" value={sub.transactionType} />
+      </div>
+
+      {/* Limits Table */}
+      <SectionTitle>Coverage Limits</SectionTitle>
+      <table className="w-full mb-6 border border-stone-200 text-[10px]">
+        <thead>
+          <tr className="bg-stone-100">
+            <th className="text-left px-3 py-1.5 font-bold text-stone-600 border-b border-stone-200">Limit Type</th>
+            <th className="text-right px-3 py-1.5 font-bold text-stone-600 border-b border-stone-200">Limit</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(limits).map(([key, val]) => (
+            <tr key={key} className="border-b border-stone-100">
+              <td className="px-3 py-1.5">{formatLimitLabel(key)}</td>
+              <td className="px-3 py-1.5 text-right">{val}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Classification Detail — shown for both types */}
+      {cls && (
+        <>
+          <SectionTitle>Classification Detail</SectionTitle>
+          <div className="border border-stone-200 rounded p-4 bg-stone-50/50 mb-6 text-[10px] grid grid-cols-2 gap-x-8 gap-y-1.5">
+            <Row label="Class Code" value={cls.classCode} />
+            <Row label="Description" value={cls.classDescription} />
+            <Row label="Prem/Ops Territory" value={cls.premOpsTerritoryCode} />
+            <Row label="Prod/CompOps Territory" value={cls.prodCompOpsTerritoryCode} />
+            <Row label="Premium Basis" value={cls.premOpsPremiumBasis} />
+            <Row label="Exposure" value={`$${cls.premOps.exposure.toLocaleString()}`} />
+          </div>
+        </>
+      )}
+
+      {/* Rating Detail (for RatingWorksheet) */}
+      {isRatingSheet && cls && (
+        <>
+          <SectionTitle>Rating Factors — Premises / Operations</SectionTitle>
+          <RatingFactorTable section={cls.premOps} />
+
+          <SectionTitle>Rating Factors — Products / Completed Ops</SectionTitle>
+          <RatingFactorTable section={cls.prodCompOps} />
+        </>
+      )}
+
+      {/* Premium Breakdown */}
+      <SectionTitle>Premium Summary</SectionTitle>
+      <table className="w-full mb-6 border border-stone-200 text-[10px]">
+        <tbody>
+          <tr className="border-b border-stone-100"><td className="px-3 py-1.5">Prem/Ops Premium</td><td className="px-3 py-1.5 text-right">${cls?.premOps.premium.toFixed(2) ?? '—'}</td></tr>
+          <tr className="border-b border-stone-100"><td className="px-3 py-1.5">Prod/CompOps Premium</td><td className="px-3 py-1.5 text-right">${cls?.prodCompOps.premium.toFixed(2) ?? '—'}</td></tr>
+          <tr className="border-b border-stone-100"><td className="px-3 py-1.5 font-bold">Base Premium</td><td className="px-3 py-1.5 text-right font-bold">${quote.basePremium.toFixed(2)}</td></tr>
+          <tr className="border-b border-stone-100"><td className="px-3 py-1.5">Cert. Terrorism</td><td className="px-3 py-1.5 text-right">${quote.certTerrorism.toFixed(2)}</td></tr>
+          <tr className="bg-ink-50 font-bold"><td className="px-3 py-2">Total Premium</td><td className="px-3 py-2 text-right">${quote.totalPremium.toFixed(2)}</td></tr>
+        </tbody>
+      </table>
+
+      {/* Footer */}
+      <div className="border-t border-stone-300 pt-4 text-[9px] text-stone-400 text-center">
+        This document is system-generated for internal use. Solaris GL PaaS — Confidential.
+      </div>
+    </div>
+  )
+}
+
+/* Small helpers for the letter */
+function Row({ label, value }) {
+  return (
+    <>
+      <span className="font-bold text-stone-500">{label}</span>
+      <span>{value}</span>
+    </>
+  )
+}
+function SectionTitle({ children }) {
+  return <p className="text-[10px] font-bold text-stone-600 uppercase tracking-widest mb-2">{children}</p>
+}
+function formatLimitLabel(key) {
+  return key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())
+}
+function RatingFactorTable({ section }) {
+  const rows = [
+    ['Loss Cost', section.lossCost],
+    ['LCM', section.lcm],
+    ['Base Rate', section.baseRate],
+    ['BI Deductible Factor', section.biDeductibleFactor],
+    ['PD Deductible Factor', section.pdDeductibleFactor],
+    ['CSL ILF', section.cslIlf],
+    ['Final ILF', section.finalIlf],
+    ['Pkg Mod Factor', section.packageModFactor],
+    ['Exp Rating Mod', section.expRatingMod],
+    ['Final Rate', section.finalRate],
+    ['Exposure', `$${section.exposure.toLocaleString()}`],
+    ['Premium', `$${section.premium.toFixed(2)}`],
+  ]
+  return (
+    <table className="w-full mb-6 border border-stone-200 text-[10px]">
+      <tbody>
+        {rows.map(([label, val]) => (
+          <tr key={label} className="border-b border-stone-100">
+            <td className="px-3 py-1">{label}</td>
+            <td className="px-3 py-1 text-right">{typeof val === 'number' ? val.toFixed(3) : val}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
 // ── Document Preview Modal ────────────────────────────────────────────────────
 
 function PreviewModal({ doc, onClose }) {
@@ -111,34 +262,30 @@ function PreviewModal({ doc, onClose }) {
             <h2 className="text-sm font-bold text-stone-900 truncate">{doc.name}</h2>
             <span className="text-xs font-mono text-stone-400 shrink-0">{doc.submission}</span>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors shrink-0"
-            aria-label="Close preview"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              Print
+            </button>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors"
+              aria-label="Close preview"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         {/* Body */}
         <div className="flex flex-1 overflow-hidden">
 
-          {/* PDF viewer placeholder — 60% */}
-          <div className="flex-[3] border-r border-stone-100 p-6 flex flex-col gap-4 overflow-y-auto">
-            <div className="bg-stone-100 rounded-lg h-96 flex flex-col items-center justify-center gap-3 select-none">
-              <FileText className="h-10 w-10 text-stone-300" />
-              <p className="text-sm font-semibold text-stone-400">{doc.name}</p>
-              <p className="text-xs text-stone-300 font-mono">{doc.submission}</p>
-            </div>
-            <div className="flex items-center justify-center">
-              <button
-                onClick={onClose}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-stone-600 bg-white border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors"
-              >
-                <Download className="h-4 w-4" />
-                Download
-              </button>
-            </div>
+          {/* PDF-style rendered document — 60% */}
+          <div className="flex-[3] border-r border-stone-100 p-6 overflow-y-auto bg-stone-50">
+            <QuoteLetterPreview doc={doc} />
           </div>
 
           {/* Metadata panel — 40% */}

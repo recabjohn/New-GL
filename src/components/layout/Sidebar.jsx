@@ -143,7 +143,7 @@ function UserDropdown({ onClose }) {
 // ---------------------------------------------------------------------------
 // Sidebar (main export)
 // ---------------------------------------------------------------------------
-export default function Sidebar() {
+export default function Sidebar({ mobileOpen, onMobileClose }) {
   const [collapsed, setCollapsed] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const location = useLocation()
@@ -175,12 +175,19 @@ export default function Sidebar() {
   }, [collapsed])
 
   return (
-    <aside
-      className={[
-        'relative flex flex-col bg-ink-950 transition-all duration-300 ease-in-out shrink-0',
-        collapsed ? 'w-[60px]' : 'w-[224px]',
-      ].join(' ')}
-    >
+    <>
+      {/* Mobile backdrop */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-40 bg-stone-900/50 backdrop-blur-sm md:hidden animate-fade-in" onClick={onMobileClose} />
+      )}
+      <aside
+        className={[
+          'fixed inset-y-0 left-0 z-50 flex flex-col bg-ink-950 transition-all duration-300 ease-in-out shrink-0 print-hide',
+          'md:relative md:translate-x-0',
+          collapsed ? 'w-[60px]' : 'w-[224px]',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+        ].join(' ')}
+      >
       {/* ------------------------------------------------------------------ */}
       {/* Logo + "+" quick-add (expanded only)                               */}
       {/* ------------------------------------------------------------------ */}
@@ -222,6 +229,7 @@ export default function Sidebar() {
                     <NavLink
                       to={to}
                       title={collapsed ? label : undefined}
+                      aria-current={active ? 'page' : undefined}
                       className={[
                         'flex items-center gap-3 px-2 py-2 rounded-lg text-sm font-medium transition-colors duration-150',
                         active
@@ -303,6 +311,7 @@ export default function Sidebar() {
         {collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
       </button>
 
-    </aside>
+      </aside>
+    </>
   )
 }

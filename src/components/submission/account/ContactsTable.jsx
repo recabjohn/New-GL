@@ -3,6 +3,7 @@ import Card from '../../ui/Card'
 import Button from '../../ui/Button'
 import Modal from '../../ui/Modal'
 import Input from '../../ui/Input'
+import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useToast } from '../../ui/Toast'
 import { Plus, Trash2, Pencil, User } from 'lucide-react'
 
@@ -73,11 +74,17 @@ export default function ContactsTable({ contacts = [], onChange }) {
     closeModal()
   }
 
+  const [confirmRemove, setConfirmRemove] = useState(null)
+
   const remove = id => {
     const c = contacts.find(x => x.id === id)
-    if (!window.confirm(`Remove ${c?.firstName} ${c?.lastName}?`)) return
-    onChange(contacts.filter(x => x.id !== id))
+    setConfirmRemove({ id, name: `${c?.firstName} ${c?.lastName}` })
+  }
+
+  const executeRemove = () => {
+    onChange(contacts.filter(x => x.id !== confirmRemove.id))
     toast.success('Contact removed', 'Contact has been removed.')
+    setConfirmRemove(null)
   }
 
   const isEditing = editId !== null
@@ -155,6 +162,16 @@ export default function ContactsTable({ contacts = [], onChange }) {
           <Input label="Phone" type="tel"   value={form.phone} onChange={e => set('phone', e.target.value)} />
         </div>
       </Modal>
+
+      <ConfirmDialog
+        open={!!confirmRemove}
+        title="Remove Contact"
+        message={`Are you sure you want to remove ${confirmRemove?.name}? This action cannot be undone.`}
+        confirmLabel="Remove"
+        variant="danger"
+        onConfirm={executeRemove}
+        onCancel={() => setConfirmRemove(null)}
+      />
     </>
   )
 }

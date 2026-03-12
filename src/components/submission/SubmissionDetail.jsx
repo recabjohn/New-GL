@@ -328,7 +328,7 @@ function ClearanceWithTimeline({ submission, onNext }) {
 const TABS = [
   { id: 'clearance', label: 'Clearance', step: 1 },
   { id: 'account',   label: 'Account',   step: 2 },
-  { id: 'lob',       label: 'GL Policy', step: 3 },
+  { id: 'lob',       label: 'LOB',       step: 3 },
   { id: 'quotes',    label: 'Quotes',    step: null },
   { id: 'claims',    label: 'Claims',    step: null },
 ]
@@ -393,7 +393,7 @@ export default function SubmissionDetail() {
           })}
         </div>
 
-        <div className="p-6">
+        <div key={tab} className="p-6 animate-fade-in">
           {tab === 'clearance' && (
             <ClearanceWithTimeline submission={submission} onNext={() => changeTab('account')} />
           )}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Bell, Search, ChevronRight, X, User, HelpCircle, LogOut, Moon } from 'lucide-react'
+import { Bell, Search, ChevronRight, X, User, HelpCircle, LogOut, Moon, Check } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { submissions } from '../../data/mockData'
 import { useToast } from '../ui/Toast'
@@ -54,8 +54,15 @@ const RECENT_SEARCHES = ['SN129105', 'SN129108', 'GL-001', 'Hawthorne', 'Artisan
 // ---------------------------------------------------------------------------
 // NotificationsPanel
 // ---------------------------------------------------------------------------
-function NotificationsPanel({ notifications, onMarkAllRead, onClose, onNavigate }) {
+const NOTIF_FILTERS = [
+  { key: 'all',    label: 'All' },
+  { key: 'urgent', label: 'Urgent' },
+  { key: 'info',   label: 'Info' },
+]
+
+function NotificationsPanel({ notifications, onMarkAllRead, onMarkRead, onClose, onNavigate }) {
   const ref = useRef(null)
+  const [filter, setFilter] = useState('all')
 
   useEffect(() => {
     const handler = (e) => {
@@ -65,48 +72,102 @@ function NotificationsPanel({ notifications, onMarkAllRead, onClose, onNavigate 
     return () => document.removeEventListener('mousedown', handler)
   }, [onClose])
 
+  const filtered = notifications.filter((n) => {
+    if (filter === 'urgent') return n.level === 'high' || n.level === 'medium'
+    if (filter === 'info')   return n.level === 'low'
+    return true
+  })
+
+  const unreadCount = notifications.filter((n) => !n.read).length
+
   return (
     <div
       ref={ref}
       className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-elevated border border-stone-200 z-50 flex flex-col overflow-hidden"
-      style={{ maxHeight: '24rem' }}
+      style={{ maxHeight: '28rem' }}
     >
       {/* Panel header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100 shrink-0">
-        <span className="text-xs font-bold text-stone-700">Notifications</span>
-        <button
-          onClick={onMarkAllRead}
-          className="text-[10px] font-semibold text-ink-500 hover:text-ink-700 transition-colors"
-        >
-          Mark all read
-        </button>
+      <div className="px-4 py-3 border-b border-stone-100 shrink-0">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-stone-700">Notifications</span>
+            {unreadCount > 0 && (
+              <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-crimson-500 rounded-full">
+                {unreadCount}
+              </span>
+            )}
+          </div>
+          <button
+            onClick={onMarkAllRead}
+            className="text-[10px] font-semibold text-ink-500 hover:text-ink-700 transition-colors"
+          >
+            Mark all read
+          </button>
+        </div>
+        {/* Filter tabs */}
+        <div className="flex gap-1">
+          {NOTIF_FILTERS.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setFilter(f.key)}
+              className={[
+                'px-2.5 py-1 text-[10px] font-semibold rounded-md transition-colors',
+                filter === f.key
+                  ? 'bg-ink-100 text-ink-700'
+                  : 'text-stone-400 hover:text-stone-600 hover:bg-stone-50',
+              ].join(' ')}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Scrollable list */}
       <div className="overflow-y-auto flex-1">
-        {notifications.map((n) => (
-          <button
-            key={n.id}
-            onClick={() => { onNavigate(n.sn); onClose() }}
-            className={[
-              'w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-stone-50 transition-colors border-b border-stone-50',
-              !n.read ? 'bg-ink-50' : 'bg-white',
-            ].join(' ')}
-          >
-            {/* Level dot */}
-            <span className={['mt-1.5 w-2 h-2 rounded-full shrink-0', LEVEL_DOT[n.level]].join(' ')} />
+        {filtered.length === 0 ? (
+          <div className="p-6 text-center">
+            <p className="text-xs text-stone-400">No notifications</p>
+          </div>
+        ) : (
+          filtered.map((n) => (
+            <div
+              key={n.id}
+              className={[
+                'flex items-start gap-3 px-4 py-3 border-b border-stone-50 group',
+                !n.read ? 'bg-ink-50' : 'bg-white',
+              ].join(' ')}
+            >
+              {/* Level dot */}
+              <span className={['mt-1.5 w-2 h-2 rounded-full shrink-0', LEVEL_DOT[n.level]].join(' ')} />
 
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-stone-700 leading-snug">{n.text}</p>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="font-mono text-[10px] text-ink-500 bg-ink-50 px-1.5 py-0.5 rounded border border-ink-100">
-                  {n.sn}
-                </span>
-                <span className="text-[10px] text-stone-400">{n.time}</span>
-              </div>
+              <button
+                onClick={() => { onNavigate(n.sn); onClose() }}
+                className="flex-1 min-w-0 text-left"
+              >
+                <p className="text-xs text-stone-700 leading-snug">{n.text}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="font-mono text-[10px] text-ink-500 bg-ink-50 px-1.5 py-0.5 rounded border border-ink-100">
+                    {n.sn}
+                  </span>
+                  <span className="text-[10px] text-stone-400">{n.time}</span>
+                </div>
+              </button>
+
+              {/* Individual mark-as-read */}
+              {!n.read && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onMarkRead(n.id) }}
+                  className="mt-0.5 p-1 rounded text-stone-300 hover:text-ink-600 hover:bg-ink-50 transition-colors opacity-0 group-hover:opacity-100"
+                  aria-label="Mark as read"
+                  title="Mark as read"
+                >
+                  <Check className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
-          </button>
-        ))}
+          ))
+        )}
       </div>
     </div>
   )
@@ -179,8 +240,8 @@ function SearchPalette({ onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] bg-stone-900/50 backdrop-blur-sm flex items-start justify-center pt-[20vh]">
-        <div className="w-full max-w-xl mx-4 bg-white rounded-xl shadow-modal overflow-hidden">
+    <div className="fixed inset-0 z-[100] bg-stone-900/50 backdrop-blur-sm flex items-start justify-center pt-[20vh] animate-fade-in" onClick={onClose}>
+        <div className="w-full max-w-xl mx-4 bg-white rounded-xl shadow-modal overflow-hidden animate-scale-in" onClick={(e) => e.stopPropagation()}>
         {/* Search input row */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-stone-100">
           <Search className="h-4 w-4 text-stone-400 shrink-0" />
@@ -348,7 +409,7 @@ function UserProfileDropdown({ onClose }) {
 // ---------------------------------------------------------------------------
 // TopBar (main export)
 // ---------------------------------------------------------------------------
-export default function TopBar() {
+export default function TopBar({ onMenuToggle }) {
   const location = useLocation()
   const navigate = useNavigate()
   const toast = useToast()
@@ -367,12 +428,15 @@ export default function TopBar() {
   const userMenuRef = useRef(null)
 
   // Unread badge: show when any high or medium notification is unread
-  const hasUnreadImportant = notifications.some(
-    (n) => !n.read && (n.level === 'high' || n.level === 'medium')
-  )
+  const unreadCount = notifications.filter((n) => !n.read).length
+  const hasUnreadImportant = unreadCount > 0
 
   const handleMarkAllRead = () => {
     setNotifications((ns) => ns.map((n) => ({ ...n, read: true })))
+  }
+
+  const handleMarkRead = (id) => {
+    setNotifications((ns) => ns.map((n) => n.id === id ? { ...n, read: true } : n))
   }
 
   const handleNotifNavigate = (sn) => {
@@ -395,7 +459,20 @@ export default function TopBar() {
 
   return (
     <>
-      <header className="h-12 bg-white border-b border-stone-200 flex items-center px-5 shrink-0 gap-4">
+      <header className="h-12 bg-white border-b border-stone-200 flex items-center px-5 shrink-0 gap-4 print-hide">
+        {/* Mobile menu button */}
+        {onMenuToggle && (
+          <button
+            onClick={onMenuToggle}
+            className="md:hidden p-1.5 text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors -ml-1"
+            aria-label="Toggle navigation menu"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        )}
+
         {/* Breadcrumb */}
         <div className="flex items-center gap-1 text-xs shrink-0">
           {crumbs.map((c, i) => (
@@ -436,7 +513,9 @@ export default function TopBar() {
             >
               <Bell className="h-4 w-4" />
               {hasUnreadImportant && (
-                <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-crimson-500 rounded-full ring-1 ring-white" />
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[9px] font-bold text-white bg-crimson-500 rounded-full ring-1 ring-white">
+                  {unreadCount}
+                </span>
               )}
             </button>
 
@@ -444,6 +523,7 @@ export default function TopBar() {
               <NotificationsPanel
                 notifications={notifications}
                 onMarkAllRead={handleMarkAllRead}
+                onMarkRead={handleMarkRead}
                 onClose={() => setShowNotifications(false)}
                 onNavigate={handleNotifNavigate}
               />

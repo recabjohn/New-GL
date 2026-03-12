@@ -469,6 +469,9 @@ export default function Step3_Locations({ data, onChange }) {
   // ---------------------------------------------------------------------------
 
   return (
+    <div className="flex gap-6">
+    {/* Main content */}
+    <div className="flex-1 min-w-0">
     <>
       {/* ------------------------------------------------------------------ */}
       {/* Main Card                                                           */}
@@ -1010,5 +1013,62 @@ export default function Step3_Locations({ data, onChange }) {
         )
       })()}
     </>
+    </div>
+
+    {/* Progress sidebar */}
+    <div className="w-56 shrink-0 hidden lg:block">
+      <div className="sticky top-20 rounded-xl border border-stone-200 bg-white overflow-hidden shadow-card">
+        <div className="px-4 py-3 border-b border-stone-100">
+          <span className="text-xs font-bold text-stone-500 uppercase tracking-widest">Section Progress</span>
+        </div>
+        <div className="p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-stone-500">States</span>
+            <span className="font-mono text-sm font-bold text-ink-800">{schedule.length}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-stone-500">Locations</span>
+            <span className="font-mono text-sm font-bold text-ink-800">{totalLocations}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-stone-500">Classifications</span>
+            <span className="font-mono text-sm font-bold text-ink-800">
+              {schedule.reduce((sum, s) => sum + (s.locations || []).reduce((ls, l) => ls + (l.classifications || []).length, 0), 0)}
+            </span>
+          </div>
+          <div className="border-t border-stone-100 pt-3 space-y-2">
+            {schedule.map(entry => {
+              const locs = entry.locations || []
+              const clsCount = locs.reduce((s, l) => s + (l.classifications || []).length, 0)
+              const allHaveClass = locs.length > 0 && locs.every(l => (l.classifications || []).length > 0)
+              return (
+                <button
+                  key={entry.id}
+                  type="button"
+                  onClick={() => setActiveStateId(entry.id)}
+                  className={[
+                    'w-full text-left px-3 py-2 rounded-lg text-xs transition-colors',
+                    entry.id === activeStateId ? 'bg-ink-50 border border-ink-200' : 'hover:bg-stone-50',
+                  ].join(' ')}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-stone-800">{entry.stateCode}</span>
+                    {allHaveClass ? (
+                      <Check className="h-3.5 w-3.5 text-sage-500" />
+                    ) : locs.length === 0 ? (
+                      <span className="w-2 h-2 rounded-full bg-stone-300" />
+                    ) : (
+                      <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                    )}
+                  </div>
+                  <span className="text-stone-400">{locs.length} loc · {clsCount} cls</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
   )
 }

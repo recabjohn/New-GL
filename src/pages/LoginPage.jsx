@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Shield, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../components/ui/Toast'
 
 // ---------------------------------------------------------------------------
 // LoginPage — split-panel design matching Solartis layout
@@ -9,6 +10,7 @@ import { useAuth } from '../context/AuthContext'
 export default function LoginPage() {
   const navigate = useNavigate()
   const { login } = useAuth()
+  const toast = useToast()
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -186,6 +188,7 @@ export default function LoginPage() {
 
               <button
                 type="button"
+                onClick={() => toast.info('Password reset coming soon', 'Contact your administrator for immediate assistance.')}
                 className="text-xs font-medium text-ink-500 hover:text-ink-700 transition-colors"
               >
                 Forgot Password

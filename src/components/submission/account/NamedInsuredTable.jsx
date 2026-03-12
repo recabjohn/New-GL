@@ -4,6 +4,7 @@ import Button from '../../ui/Button'
 import Modal from '../../ui/Modal'
 import Input from '../../ui/Input'
 import Select from '../../ui/Select'
+import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useToast } from '../../ui/Toast'
 import { Plus, Trash2, Pencil, Building2 } from 'lucide-react'
 
@@ -73,11 +74,17 @@ export default function NamedInsuredTable({ insureds = [], onChange }) {
     closeModal()
   }
 
+  const [confirmRemove, setConfirmRemove] = useState(null)
+
   const remove = id => {
     const ins = insureds.find(x => x.id === id)
-    if (!window.confirm(`Remove ${ins?.name}?`)) return
-    onChange(insureds.filter(x => x.id !== id))
+    setConfirmRemove({ id, name: ins?.name })
+  }
+
+  const executeRemove = () => {
+    onChange(insureds.filter(x => x.id !== confirmRemove.id))
     toast.success('Named insured removed', 'Named insured has been removed.')
+    setConfirmRemove(null)
   }
 
   const isEditing = editId !== null
@@ -149,6 +156,16 @@ export default function NamedInsuredTable({ insureds = [], onChange }) {
           <Select label="Relationship" options={relationships} value={form.relationship} onChange={v => set('relationship', v)} />
         </div>
       </Modal>
+
+      <ConfirmDialog
+        open={!!confirmRemove}
+        title="Remove Named Insured"
+        message={`Are you sure you want to remove ${confirmRemove?.name}? This action cannot be undone.`}
+        confirmLabel="Remove"
+        variant="danger"
+        onConfirm={executeRemove}
+        onCancel={() => setConfirmRemove(null)}
+      />
     </>
   )
 }

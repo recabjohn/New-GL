@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { Component } from 'react'
 import { useAuth } from './context/AuthContext'
 import Layout from './components/layout/Layout'
 import LoginPage            from './pages/LoginPage'
@@ -17,6 +18,42 @@ import SettingsPage         from './pages/SettingsPage'
 import HelpPage             from './pages/HelpPage'
 
 // ---------------------------------------------------------------------------
+// Global Error Boundary
+// ---------------------------------------------------------------------------
+class ErrorBoundary extends Component {
+  state = { hasError: false, error: null }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-stone-50 p-6">
+          <div className="text-center max-w-md">
+            <div className="w-14 h-14 rounded-full bg-crimson-50 flex items-center justify-center mx-auto mb-4">
+              <svg className="h-7 w-7 text-crimson-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h1 className="text-lg font-bold text-stone-900 mb-1">Something went wrong</h1>
+            <p className="text-sm text-stone-500 mb-5">An unexpected error occurred. Please try refreshing the page.</p>
+            <button
+              onClick={() => { this.setState({ hasError: false, error: null }); window.location.href = '/' }}
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-ink-700 hover:bg-ink-800 rounded-lg transition-colors"
+            >
+              Return to Dashboard
+            </button>
+          </div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Route guard — redirects to /login when not authenticated
 // ---------------------------------------------------------------------------
 function ProtectedRoute({ children }) {
@@ -29,6 +66,7 @@ export default function App() {
   const { isAuthenticated } = useAuth()
 
   return (
+    <ErrorBoundary>
     <Routes>
       {/* Public route — no sidebar / topbar */}
       <Route
@@ -68,5 +106,6 @@ export default function App() {
         }
       />
     </Routes>
+    </ErrorBoundary>
   )
 }

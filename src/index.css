@@ -1,3 +1,5 @@
+@import 'leaflet/dist/leaflet.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -47,5 +49,70 @@
 @layer utilities {
   .animate-shimmer {
     animation: shimmer 1.5s ease-in-out infinite;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.25s ease-out;
+  }
+}
+
+/* Modal scale-in animation */
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@layer utilities {
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+}
+
+/* ── Print-friendly styles ────────────────────────────────────────────────── */
+@media print {
+  /* Hide all chrome: sidebar, topbar, tabs, actions, modals backdrop */
+  nav, header, aside,
+  [data-print-hide],
+  .print-hide {
+    display: none !important;
+  }
+
+  /* Reset page background */
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt !important;
+  }
+
+  /* Let main content fill the page */
+  main, [role="main"] {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Print content should be visible and styled */
+  .print-content {
+    box-shadow: none !important;
+    border: none !important;
+    page-break-inside: avoid;
+  }
+
+  /* Ensure tables don't overflow */
+  table {
+    page-break-inside: avoid;
+  }
+
+  /* Hide scrollbars */
+  ::-webkit-scrollbar {
+    display: none !important;
   }
 }

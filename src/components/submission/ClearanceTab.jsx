@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import Card from '../ui/Card'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
@@ -7,8 +7,11 @@ import { useToast } from '../ui/Toast'
 import { agencies } from '../../data/mockData'
 import {
   ShieldCheck, AlertTriangle, Search, CheckCircle2, CircleDot, ArrowRight,
-  Flag,
+  Flag, MapPin, Info,
 } from 'lucide-react'
+import Toggle from '../ui/Toggle'
+import AddressMap, { lookupZip, geocodeAddress, reverseGeocodeLatLng } from './AddressMap'
+import useFieldValidation from '../../hooks/useFieldValidation'
 
 const agentsByAgency = {
   'Hawthorne Risk Advisors, LLC': ['Michael Grant', 'Rebecca Torres'],
@@ -314,18 +317,117 @@ export default function ClearanceTab({ submission, onNext }) {
   const [expiryDate, setExp]    = useState(submission?.expirationDate || '')
   const [checking, setChecking] = useState(false)
   const [result, setResult]     = useState(null)
+  const [countdown, setCountdown] = useState(null)
+
+  // Account Information state
+  const [isNewAccount, setIsNewAccount] = useState(true)
+  const [accountName, setAccountName]   = useState(submission?.insuredName || '')
+  const [legalDba, setLegalDba]         = useState('')
+  const [fullAddress, setFullAddress]   = useState('')
+  const [addressLine1, setAddressLine1] = useState('')
+  const [addressLine2, setAddressLine2] = useState('')
+  const [city, setCity]                 = useState('')
+  const [state, setState]               = useState('')
+  const [county, setCounty]             = useState('')
+  const [zipcode, setZipcode]           = useState('')
+  const [country, setCountry]           = useState('US')
+  const [phone, setPhone]               = useState('')
+  const [fein, setFein]                 = useState('')
+  const [mapCenter, setMapCenter]       = useState(null)
+  const zipLookupRef = useRef(null)
+
+  // Inline field validation
+  const validationSchema = useMemo(() => ({
+    accountName:   ['required'],
+    fullAddress:   ['required'],
+    addressLine1:  ['required'],
+    city:          ['required'],
+    state:         ['required'],
+    zipcode:       ['required', 'zip'],
+    country:       ['required'],
+    phone:         ['phone'],
+    fein:          ['fein'],
+    effectiveDate: ['required', 'date'],
+  }), [])
+  const { validate, touchField, fieldError } = useFieldValidation(validationSchema)
+
+  // Helpers to wire onChange + onBlur with validation
+  const vProps = (field, value) => ({
+    error: fieldError(field),
+    onBlur: () => { touchField(field); validate(field, value) },
+  })
+
+  // Zip code auto-fill: when 5 digits are entered, look up city/state and center map
+  const handleZipChange = useCallback(async (e) => {
+    const val = e.target.value
+    setZipcode(val)
+    if (zipLookupRef.current) clearTimeout(zipLookupRef.current)
+    if (/^\d{5}$/.test(val)) {
+      zipLookupRef.current = setTimeout(async () => {
+        const data = await lookupZip(val)
+        if (data) {
+          setCity(data.city)
+          setState(data.state)
+          setMapCenter([data.lat, data.lng])
+        }
+      }, 300)
+    }
+  }, [])
+
+  // Map click → reverse geocode → fill all address fields
+  const handleMapClick = useCallback(async ([lat, lng]) => {
+    const data = await reverseGeocodeLatLng(lat, lng)
+    if (data) {
+      setFullAddress(data.fullAddress)
+      setAddressLine1(data.addressLine1)
+      setCity(data.city)
+      setState(data.state)
+      setCounty(data.county)
+      setZipcode(data.zipcode)
+      setCountry(data.country)
+      setMapCenter([lat, lng])
+    }
+  }, [])
+
+  // Full address search → forward geocode → fill fields + center map
+  const handleAddressSearch = useCallback(async (e) => {
+    const val = e.target.value
+    setFullAddress(val)
+    if (val.length < 8) return
+    if (zipLookupRef.current) clearTimeout(zipLookupRef.current)
+    zipLookupRef.current = setTimeout(async () => {
+      const data = await geocodeAddress(val)
+      if (data) {
+        setAddressLine1(data.addressLine1)
+        setCity(data.city)
+        setState(data.state)
+        setCounty(data.county)
+        setZipcode(data.zipcode)
+        setCountry(data.country)
+        setMapCenter([data.lat, data.lng])
+      }
+    }, 800)
+  }, [])
+
+  // Visual countdown → auto advance
+  useEffect(() => {
+    if (countdown === null) return
+    if (countdown <= 0) { onNext?.(); return }
+    const t = setTimeout(() => setCountdown(c => c - 1), 1000)
+    return () => clearTimeout(t)
+  }, [countdown, onNext])
 
   const agentOptions = agency ? (agentsByAgency[agency] || []) : []
 
   const handleCheck = async () => {
     setChecking(true)
     setResult(null)
+    setCountdown(null)
     await new Promise(r => setTimeout(r, 1400))
     setChecking(false)
     setResult('cleared')
     toast.success('Clearance passed', 'No conflicting submissions found for this insured.')
-    // Auto-advance to Account tab after a brief moment
-    setTimeout(() => onNext?.(), 1500)
+    setCountdown(3)
   }
 
   return (
@@ -352,27 +454,81 @@ export default function ClearanceTab({ submission, onNext }) {
       <div className="grid grid-cols-3 gap-6">
         {/* Left: form (2/3 width) */}
         <div className="col-span-2 space-y-5">
-          <Card title="Agency &amp; Agent">
-            <div className="grid grid-cols-2 gap-4">
-              <Select
-                label="Agency Name" required searchable
-                options={agencies} value={agency}
-                onChange={v => { setAgency(v); setAgent('') }}
-              />
-              <Select
-                label="Agent Name" searchable
-                options={agentOptions} value={agent}
-                onChange={setAgent}
-                placeholder={agency ? 'Select agent...' : 'Select agency first'}
-                disabled={!agency}
-              />
+          {/* ── Account Information ──────────────────────────────────────── */}
+          <Card title="Account Information" actions={
+            <div className="flex items-center gap-2">
+              <Toggle checked={isNewAccount} onChange={setIsNewAccount} />
+              <span className="text-xs text-stone-500 font-medium">New Account</span>
             </div>
-          </Card>
+          }>
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <Input label="Account Name" required value={accountName} onChange={e => { setAccountName(e.target.value); validate('accountName', e.target.value) }} {...vProps('accountName', accountName)} />
+                <Input label="Legal Entity Name / DBA" value={legalDba} onChange={e => setLegalDba(e.target.value)} />
+              </div>
 
-          <Card title="Policy Dates">
-            <div className="grid grid-cols-2 gap-4">
-              <Input label="Policy Effective Date"   required type="date" value={effectiveDate} onChange={e => setEff(e.target.value)} />
-              <Input label="Policy Expiration Date"  type="date"          value={expiryDate}    onChange={e => setExp(e.target.value)} />
+              {/* Address with interactive map */}
+              <div>
+                <Input label="Enter Full Address" required value={fullAddress} onChange={handleAddressSearch} placeholder="Start typing to search..." {...vProps('fullAddress', fullAddress)} />
+                <AddressMap center={mapCenter} onMapClick={handleMapClick} />
+                <p className="text-[10px] text-stone-400 mt-1">Click on the map to auto-fill the address fields</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Input label="Address Line 1" required value={addressLine1} onChange={e => { setAddressLine1(e.target.value); validate('addressLine1', e.target.value) }} {...vProps('addressLine1', addressLine1)} />
+                <Input label="Address Line 2" value={addressLine2} onChange={e => setAddressLine2(e.target.value)} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <Input label="City" required value={city} onChange={e => { setCity(e.target.value); validate('city', e.target.value) }} {...vProps('city', city)} />
+                <Input label="State" required value={state} onChange={e => { setState(e.target.value); validate('state', e.target.value) }} {...vProps('state', state)} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <Input label="County" required value={county} onChange={e => setCounty(e.target.value)} />
+                <Input label="Zipcode" required value={zipcode} onChange={handleZipChange} {...vProps('zipcode', zipcode)} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <Input label="Country" required value={country} onChange={e => { setCountry(e.target.value); validate('country', e.target.value) }} {...vProps('country', country)} />
+                <div />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <Input label="Phone Number" type="tel" value={phone} onChange={e => { setPhone(e.target.value); validate('phone', e.target.value) }} {...vProps('phone', phone)} />
+                <Input label="FEIN" value={fein} onChange={e => { setFein(e.target.value); validate('fein', e.target.value) }} {...vProps('fein', fein)} placeholder="XX-XXXXXXX" />
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-stone-100 pt-5">
+                <h4 className="text-sm font-semibold text-stone-800 mb-3">Agency Information</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <Select
+                    label="Agency Name" required searchable
+                    options={agencies} value={agency}
+                    onChange={v => { setAgency(v); setAgent('') }}
+                  />
+                </div>
+              </div>
+
+              {/* Agent */}
+              <div className="border-t border-stone-100 pt-5">
+                <h4 className="text-sm font-semibold text-stone-800 mb-3">Agent Information</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <Select
+                    label="Agent Name" searchable
+                    options={agentOptions} value={agent}
+                    onChange={setAgent}
+                    placeholder={agency ? 'Select agent...' : 'Select agency first'}
+                    disabled={!agency}
+                  />
+                </div>
+              </div>
+
+              {/* Policy Dates */}
+              <div className="border-t border-stone-100 pt-5">
+                <h4 className="text-sm font-semibold text-stone-800 mb-3">Policy Dates</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <Input label="Policy Effective Date"   required type="date" value={effectiveDate} onChange={e => { setEff(e.target.value); validate('effectiveDate', e.target.value) }} {...vProps('effectiveDate', effectiveDate)} />
+                  <Input label="Policy Expiration Date"  type="date"          value={expiryDate}    onChange={e => setExp(e.target.value)} />
+                </div>
+              </div>
             </div>
           </Card>
 
@@ -433,12 +589,25 @@ export default function ClearanceTab({ submission, onNext }) {
               <div className="w-10 h-10 rounded-full bg-sage-100 flex items-center justify-center shrink-0">
                 <ShieldCheck className="h-5 w-5 text-sage-600" />
               </div>
-              <div>
+              <div className="flex-1">
                 <p className="text-base font-semibold text-sage-700">Clearance Passed</p>
                 <p className="text-sm text-sage-600 mt-0.5">No conflicting policies found for this insured and agency combination.</p>
-                <Button variant="cta" size="sm" icon={ArrowRight} onClick={onNext} className="mt-2">
-                  Proceed to Account
-                </Button>
+                {countdown !== null && countdown > 0 && (
+                  <p className="text-xs text-sage-500 mt-1.5">Redirecting to Account in {countdown}s…</p>
+                )}
+                <div className="flex items-center gap-3 mt-2">
+                  <Button variant="cta" size="sm" icon={ArrowRight} onClick={onNext}>
+                    Proceed to Account
+                  </Button>
+                  {countdown !== null && countdown > 0 && (
+                    <div className="flex-1 h-1.5 rounded-full bg-sage-200 overflow-hidden">
+                      <div
+                        className="h-full bg-sage-500 rounded-full transition-all duration-1000 ease-linear"
+                        style={{ width: `${((3 - countdown) / 3) * 100}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Button from '../../ui/Button'
+import ConfirmDialog from '../../ui/ConfirmDialog'
 import { glPolicy } from '../../../data/mockData'
 import { useToast } from '../../ui/Toast'
 import Step1_SubmissionInfo from './Step1_SubmissionInfo'
@@ -59,7 +60,14 @@ export default function LOBTab({ onComplete }) {
     navigate(`/submissions/${id}/browse`)
   }
 
-  const handlePrev = () => setStep(s => s - 1)
+  const [pendingStep, setPendingStep] = useState(null)
+
+  const guardedSetStep = (target) => {
+    if (isDirty) { setPendingStep(target); return }
+    setStep(target)
+  }
+
+  const handlePrev = () => guardedSetStep(step - 1)
 
   return (
     <div className="space-y-5">
@@ -74,7 +82,7 @@ export default function LOBTab({ onComplete }) {
               <div key={s.label} className="flex items-center">
                 <button
                   type="button"
-                  onClick={() => isDone && setStep(num)}
+                  onClick={() => isDone && guardedSetStep(num)}
                   className={`flex items-center gap-3 ${isDone ? 'cursor-pointer' : 'cursor-default'}`}
                 >
                   <div className={[
@@ -123,6 +131,17 @@ export default function LOBTab({ onComplete }) {
           }
         </Button>
       </div>
+
+      <ConfirmDialog
+        open={pendingStep !== null}
+        title="Unsaved Changes"
+        message="You have unsaved changes on this step. Leave anyway?"
+        confirmLabel="Leave"
+        cancelLabel="Stay"
+        variant="warning"
+        onConfirm={() => { setStep(pendingStep); setPendingStep(null) }}
+        onCancel={() => setPendingStep(null)}
+      />
     </div>
   )
 }

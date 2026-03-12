@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { Menu } from 'lucide-react'
 import Sidebar from './Sidebar'
 import TopBar from './TopBar'
 import { ToastProvider } from '../ui/Toast'
@@ -18,6 +19,10 @@ export default function Layout({ children }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [showShortcuts, setShowShortcuts] = useState(false)
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
+
+  // Close mobile nav on route change
+  useEffect(() => { setMobileNavOpen(false) }, [pathname])
 
   // Scroll to top on route change
   useEffect(() => {
@@ -48,9 +53,9 @@ export default function Layout({ children }) {
   return (
     <ToastProvider>
       <div className="flex h-screen overflow-hidden bg-stone-50">
-        <Sidebar />
+        <Sidebar mobileOpen={mobileNavOpen} onMobileClose={() => setMobileNavOpen(false)} />
         <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-          <TopBar />
+          <TopBar onMenuToggle={() => setMobileNavOpen(v => !v)} />
           <main className="flex-1 overflow-y-auto p-6">
             {children}
           </main>
