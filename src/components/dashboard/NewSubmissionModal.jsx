@@ -4,7 +4,7 @@ import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import Select from '../ui/Select'
-import { agencies, assignees, usStates } from '../../data/mockData'
+import { agencies, assignees, usStates, submissions } from '../../data/mockData'
 import { useToast } from '../ui/Toast'
 import { Upload, X } from 'lucide-react'
 
@@ -22,12 +22,20 @@ const agentsByAgency = {
 export default function NewSubmissionModal({ open, onClose, onCreated }) {
   const navigate = useNavigate()
   const toast = useToast()
+  // Auto-fill today + 1 year
+  const today = new Date().toISOString().slice(0, 10)
+  const oneYearLater = (dateStr) => {
+    const d = new Date(dateStr)
+    d.setFullYear(d.getFullYear() + 1)
+    return d.toISOString().slice(0, 10)
+  }
+
   const [form, setForm] = useState({
     priority: 'MEDIUM',
     submissionType: 'NEW-BUSINESS',
     assignee: 'uiuxAdmin',
-    effectiveDate: '',
-    expirationDate: '',
+    effectiveDate: today,
+    expirationDate: oneYearLater(today),
     receiveDate: '',
     needByDate: '',
     agencyName: '',
@@ -59,6 +67,21 @@ export default function NewSubmissionModal({ open, onClose, onCreated }) {
     await new Promise(r => setTimeout(r, 800))
     setSaving(false)
     const newId = 'SN129125'
+
+    // Persist form data into the submissions array so downstream tabs pick it up
+    const target = submissions.find(s => s.id === newId)
+    if (target) {
+      target.insuredName    = form.insuredName
+      target.dba            = form.dba
+      target.agencyName     = form.agencyName
+      target.agentName      = form.agentName
+      target.effectiveDate  = form.effectiveDate
+      target.expirationDate = form.expirationDate
+      target.needByDate     = form.needByDate
+      target.priority       = form.priority
+      target.assignee       = form.assignee
+    }
+
     toast.success('Submission created', `${newId} created — opening now.`)
     onCreated?.()
     onClose()
@@ -103,7 +126,7 @@ export default function NewSubmissionModal({ open, onClose, onCreated }) {
 
         {/* Row 2: Dates */}
         <div className="grid grid-cols-2 gap-4">
-          <Input label="Policy Effective Date" required type="date" value={form.effectiveDate} onChange={e => { set('effectiveDate', e.target.value); clearErr('effectiveDate') }} error={errors.effectiveDate} />
+          <Input label="Policy Effective Date" required type="date" value={form.effectiveDate} onChange={e => { const v = e.target.value; set('effectiveDate', v); if (v) set('expirationDate', oneYearLater(v)); clearErr('effectiveDate') }} error={errors.effectiveDate} />
           <Input label="Policy Expiration Date" type="date" value={form.expirationDate} onChange={e => set('expirationDate', e.target.value)} />
         </div>
         <div className="grid grid-cols-2 gap-4">

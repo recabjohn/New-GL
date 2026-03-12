@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents, ZoomControl } from 'react-leaflet'
 import L from 'leaflet'
 
 // Fix default marker icon (Leaflet + bundlers issue)
@@ -9,6 +9,20 @@ L.Icon.Default.mergeOptions({
   iconUrl:       'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 })
+
+// Custom red Google-style marker
+const redMarkerIcon = new L.Icon({
+  iconUrl:       'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize:      [25, 41],
+  iconAnchor:    [12, 41],
+  popupAnchor:   [1, -34],
+  shadowSize:    [41, 41],
+})
+
+// Alabama center & US bounds
+const ALABAMA_CENTER = [32.3182, -86.9023] // Montgomery, AL
+const US_BOUNDS = L.latLngBounds([24.396308, -125.0], [49.384358, -66.93457])
 
 // ─── Reverse geocode via Nominatim ────────────────────────────────────────────
 async function reverseGeocode(lat, lng) {
@@ -25,6 +39,28 @@ async function forwardGeocode(query) {
   if (!res.ok) return null
   const data = await res.json()
   return data[0] || null
+}
+
+// ─── Search addresses (multi-result) for autocomplete ─────────────────────────
+export async function searchAddresses(query) {
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=us`
+  const res = await fetch(url, { headers: { 'Accept-Language': 'en' } })
+  if (!res.ok) return []
+  const data = await res.json()
+  return data.map(r => {
+    const addr = r.address || {}
+    return {
+      displayName:  r.display_name,
+      lat:          parseFloat(r.lat),
+      lng:          parseFloat(r.lon),
+      addressLine1: [addr.house_number, addr.road].filter(Boolean).join(' '),
+      city:         addr.city || addr.town || addr.village || '',
+      state:        addr.state || '',
+      county:       addr.county?.replace(' County', '') || '',
+      zipcode:      addr.postcode || '',
+      country:      addr.country_code?.toUpperCase() || 'US',
+    }
+  })
 }
 
 // ─── Zip code lookup via zippopotam.us ────────────────────────────────────────
@@ -91,6 +127,16 @@ function ClickHandler({ onClick }) {
   return null
 }
 
+// ─── Internal: restrict panning to US bounds ─────────────────────────────────
+function BoundsEnforcer() {
+  const map = useMap()
+  useEffect(() => {
+    map.setMaxBounds(US_BOUNDS.pad(0.1))
+    map.setMinZoom(4)
+  }, [map])
+  return null
+}
+
 // ─── AddressMap component ─────────────────────────────────────────────────────
 export default function AddressMap({ center, onMapClick }) {
   const [marker, setMarker] = useState(center)
@@ -104,24 +150,27 @@ export default function AddressMap({ center, onMapClick }) {
     onMapClick?.([latlng.lat, latlng.lng])
   }
 
-  const defaultCenter = center || [39.8283, -98.5795]  // center of US
-  const defaultZoom   = center ? 15 : 4
+  const defaultCenter = center || ALABAMA_CENTER
+  const defaultZoom   = center ? 15 : 7  // zoom level 7 shows Alabama nicely
 
   return (
-    <div className="mt-3 rounded-lg border border-stone-200 overflow-hidden h-48">
+    <div className="mt-3 rounded-xl border border-stone-200 overflow-hidden shadow-sm" style={{ height: '260px' }}>
       <MapContainer
         center={defaultCenter}
         zoom={defaultZoom}
         className="h-full w-full"
         scrollWheelZoom
+        zoomControl={false}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Source: Esri, DeLorme, NAVTEQ'
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
         />
+        <BoundsEnforcer />
+        <ZoomControl position="bottomright" />
         <FlyTo center={center} />
         <ClickHandler onClick={handleClick} />
-        {marker && <Marker position={marker} />}
+        {marker && <Marker position={marker} icon={redMarkerIcon} />}
       </MapContainer>
     </div>
   )

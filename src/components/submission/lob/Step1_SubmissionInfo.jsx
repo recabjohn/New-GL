@@ -60,24 +60,6 @@ export default function Step1_SubmissionInfo({ data, onChange }) {
       <div className="grid grid-cols-2 gap-5">
         {/* ── Left column ── */}
         <div className="space-y-5">
-          {/* Underwriter & Service */}
-          <Card>
-            <SectionRule color="bg-ink-400">Underwriter &amp; Service</SectionRule>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <Input label="Underwriter Name"  value={data.underwriterName}        onChange={e => set('underwriterName', e.target.value)} />
-                <Input label="Underwriter Email" value={data.underwriterEmail}       onChange={e => set('underwriterEmail', e.target.value)} type="email" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <Input label="Specialist Name"   value={data.serviceSpecialistName}  onChange={e => set('serviceSpecialistName', e.target.value)} />
-                <Input label="Specialist Email"  value={data.serviceSpecialistEmail} onChange={e => set('serviceSpecialistEmail', e.target.value)} type="email" />
-              </div>
-              <div className="flex items-center gap-3 pt-2 border-t border-stone-100">
-                <Toggle checked={data.ercVersion} onChange={v => set('ercVersion', v)} label="Apply Latest ERC Version" />
-              </div>
-            </div>
-          </Card>
-
           {/* Account + Agency */}
           <Card>
             <SectionRule color="bg-ink-400">Account &amp; Agency</SectionRule>
@@ -164,6 +146,7 @@ export default function Step1_SubmissionInfo({ data, onChange }) {
                 </div>
               </div>
 
+              {/* Number of employees */}
               <div className="pt-3 border-t border-stone-100">
                 <Input
                   label="Number of Employees" required type="number"
@@ -171,25 +154,6 @@ export default function Step1_SubmissionInfo({ data, onChange }) {
                   onChange={e => set('numberOfEmployees', e.target.value === '' ? '' : Number(e.target.value))}
                   placeholder="0"
                 />
-              </div>
-
-              {/* Quick summary */}
-              <div className="mt-2 pt-4 border-t border-stone-100">
-                <SectionRule color="bg-sage-400">Loss Summary</SectionRule>
-                <div className="space-y-1">
-                  {[
-                    ['Loss Run Years',    data.lossRunYears || '—'],
-                    ['Carrier Type',      data.carrierLossRuns || '—'],
-                    ['Runs Received',     data.carrierLossRunsReceived || '—'],
-                    ['Appetite Signal',   data.appetiteSignal || 'Standard'],
-                    ['Employees',         data.numberOfEmployees != null ? data.numberOfEmployees : '—'],
-                  ].map(([k, v]) => (
-                    <div key={k} className="flex justify-between items-center py-1.5 border-b border-stone-50 text-sm">
-                      <span className="text-stone-500">{k}</span>
-                      <span className="font-semibold text-stone-800">{String(v)}</span>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </Card>

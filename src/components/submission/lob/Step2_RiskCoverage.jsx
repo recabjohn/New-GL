@@ -139,14 +139,6 @@ export default function Step2_RiskCoverage({ data, onChange }) {
   const set = (k, v) => onChange({ ...data, [k]: v })
   const [newCoverage, setNewCoverage] = useState('')
 
-  const activeFlagCount = [
-    'governmentalSubdivision', 'limitedProductWithdrawal', 'sizeOfRiskRating',
-    'stopGapCoverage', 'medPayExclusion', 'cyberIncidentLiability',
-    'lossOfElectronicData', 'experienceRating', 'scheduleRating',
-    'acceptTerrorismCoverage', 'compositeRating', 'limitedCoverageUnmannedAircraft',
-    'tripTerminatesEarly', 'ndPesticideApplicator',
-  ].filter(k => !!data[k]).length
-
   const addCoverage = () => {
     if (!newCoverage) return
     const next = [...(data.additionalCoverages || []), { id: Date.now(), name: newCoverage }]
@@ -230,20 +222,45 @@ export default function Step2_RiskCoverage({ data, onChange }) {
         </div>
       </Card>
 
-      {/* ── Policy Limits ── */}
-      <Card title="Policy Limits">
-        {/* Subline — required, at top */}
-        <div className="mb-4">
+      {/* ── General Liability Loss Control Requirements ── */}
+      <Card title="General Liability Loss Control Requirements">
+        <div className="grid grid-cols-2 gap-4">
+          <Select
+            label="Post-Bind Loss Control Override"
+            options={lossControlOpts}
+            value={data.postBindLossControlOverride}
+            onChange={v => set('postBindLossControlOverride', v)}
+          />
           <Select
             label="Subline" required
             options={sublineOptions}
             value={data.subline}
             onChange={v => set('subline', v)}
           />
-        </div>
-        <SectionRule color="bg-ink-400">Liability Limits</SectionRule>
-        <div className="grid grid-cols-2 gap-4">
-          {/* 1. Each Occurrence / Common Cause Limit — label + options vary by subline */}
+          {showPremOps && (
+            <Select
+              label="Governmental Subdivision" required
+              options={yesNoOpts}
+              value={data.governmentalSubdivision ? 'Yes' : 'No'}
+              onChange={v => set('governmentalSubdivision', v === 'Yes')}
+            />
+          )}
+          {showProdComp && (
+            <Select
+              label="Limited Product Withdrawal Coverage" required
+              options={yesNoOpts}
+              value={data.limitedProductWithdrawal ? 'Yes' : 'No'}
+              onChange={v => set('limitedProductWithdrawal', v === 'Yes')}
+            />
+          )}
+          {!showSpecial && (
+            <Select
+              label="Size Of Risk Rating" required
+              options={yesNoOpts}
+              value={data.sizeOfRiskRating ? 'Yes' : 'No'}
+              onChange={v => set('sizeOfRiskRating', v === 'Yes')}
+            />
+          )}
           <Select
             label={showLiquor ? 'Each Common Cause Limit *' : 'Each Occurrence Limit *'}
             required searchable
@@ -251,8 +268,6 @@ export default function Step2_RiskCoverage({ data, onChange }) {
             value={data.eachOccurrenceLimit}
             onChange={v => set('eachOccurrenceLimit', v)}
           />
-
-          {/* 2. Medical Payments Exclusion for Entire Policy — Prem/Ops only */}
           {showPremOps && (
             <Select
               label="Medical Payments Exclusion for Entire Policy"
@@ -261,24 +276,18 @@ export default function Step2_RiskCoverage({ data, onChange }) {
               onChange={v => set('medPayExclusionPolicy', v)}
             />
           )}
-
-          {/* 3. Medical Payments Limit — Prem/Ops only */}
           {showPremOps && (
             <Select label="Medical Payments Limit" searchable options={medPayLimits} value={data.medPayLimit} onChange={v => set('medPayLimit', v)} />
           )}
-
-          {/* 4. Personal & Adv Injury — Select, Prem/Ops only */}
           {showPremOps && (
             <Select
-              label="Personal &amp; Adv Injury"
+              label="Personal and Advertising Injury Limit"
               searchable
               options={personalInjuryLimits}
               value={data.personalAdvInjuryLimit}
               onChange={v => set('personalAdvInjuryLimit', v)}
             />
           )}
-
-          {/* 5. General / Aggregate Limit — hidden for Prod/Comp Only and Railroad */}
           {!showProdCompOnly && !showRailroad && (
             <Select
               label={showLiquor || showOCP ? 'Aggregate Limit *' : 'General Aggregate Limit *'}
@@ -288,10 +297,8 @@ export default function Step2_RiskCoverage({ data, onChange }) {
               onChange={v => set('generalAggregateLimit', v)}
             />
           )}
-
-          {/* 6. Railroad Aggregate — auto-computed read-only */}
           {showRailroad && (
-            <div>
+            <div className="col-span-1">
               <label className="form-label mb-1.5">Aggregate Limit *</label>
               <div className="px-3 py-2 text-sm font-mono font-semibold text-stone-700 bg-stone-50 border border-stone-200 rounded-lg">
                 {(() => {
@@ -303,28 +310,8 @@ export default function Step2_RiskCoverage({ data, onChange }) {
               <p className="text-xs text-stone-400 mt-1">Computed: 3 &times; Each Occurrence</p>
             </div>
           )}
-
-          {/* 7. Products/Comp Ops Aggregate */}
           {showProdComp && (
-            <Select label="Products/Comp Ops Aggregate" searchable options={aggLimits} value={data.prodCompOpsAggregateLimit} onChange={v => set('prodCompOpsAggregateLimit', v)} />
-          )}
-
-          {/* 8. Damage to Premises Rented — Prem/Ops only */}
-          {showPremOps && (
-            <Input label="Damage to Premises Rented" value={data.damageToRentedPremisesLimit} onChange={e => set('damageToRentedPremisesLimit', e.target.value)} prefix="$" />
-          )}
-        </div>
-
-        {/* Coverage Form + Condominium Association side by side */}
-        <div className="mt-4 pt-3 border-t border-stone-100 grid grid-cols-2 gap-4">
-          <Select label="Coverage Form" options={coverageForms} value={data.coverageForm} onChange={v => set('coverageForm', v)} />
-          {showPremOps && (
-            <Select
-              label="Condominium Association"
-              options={yesNoOpts}
-              value={data.condominiumAssociation || 'No'}
-              onChange={v => set('condominiumAssociation', v)}
-            />
+            <Select label="Products/Completed Operations Aggregate Limit" searchable options={aggLimits} value={data.prodCompOpsAggregateLimit} onChange={v => set('prodCompOpsAggregateLimit', v)} />
           )}
         </div>
       </Card>
@@ -533,94 +520,74 @@ export default function Step2_RiskCoverage({ data, onChange }) {
 
       {/* ── Deductibles ── */}
       <Card title="Deductibles">
-        <SectionRule color="bg-amber-400">Deductible Schedule</SectionRule>
-        <div className="rounded-lg overflow-hidden border border-stone-100">
-          <table className="w-full text-sm">
-            <thead className="bg-stone-25">
-              <tr>
-                <th className="text-left px-4 py-2.5 text-xs font-semibold text-stone-400 w-1/3">Coverage</th>
-                <th className="text-left px-4 py-2.5 text-xs font-semibold text-stone-400">BI Deductible</th>
-                <th className="text-left px-4 py-2.5 text-xs font-semibold text-stone-400">PD Deductible</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-50">
-              {showPremOps && (
-                <tr>
-                  <td className="px-4 py-3 text-xs font-semibold text-stone-600 whitespace-nowrap">Prem/Ops</td>
-                  <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.premOpsBI}  onChange={v => set('premOpsBI', v)} /></td>
-                  <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.premOpsPD}  onChange={v => set('premOpsPD', v)} /></td>
-                </tr>
-              )}
-              {showProdComp && (
-                <tr>
-                  <td className="px-4 py-3 text-xs font-semibold text-stone-600 whitespace-nowrap">Prod/Comp Ops</td>
-                  <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.prodCompOpsBI} onChange={v => set('prodCompOpsBI', v)} /></td>
-                  <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.prodCompOpsPD} onChange={v => set('prodCompOpsPD', v)} /></td>
-                </tr>
-              )}
-              {!showSpecial && (
-                <tr>
-                  <td className="px-4 py-3 text-xs font-semibold text-stone-600">Combined BI&amp;PD</td>
-                  <td className="px-3 py-2" colSpan={2}>
-                    <div className="grid grid-cols-2 gap-2">
-                      {showPremOps  && <Select searchable options={deductibleOptions} value={data.premOpsBIandPD}     onChange={v => set('premOpsBIandPD', v)} />}
-                      {showProdComp && <Select searchable options={deductibleOptions} value={data.prodCompOpsBIandPD} onChange={v => set('prodCompOpsBIandPD', v)} />}
-                    </div>
-                  </td>
-                </tr>
-              )}
-              {showLiquor && (
-                <tr>
-                  <td className="px-4 py-3 text-xs font-semibold text-stone-600 whitespace-nowrap">Liquor</td>
-                  <td className="px-3 py-2" colSpan={2}>
-                    <Select searchable options={deductibleOptions} value={data.liquorDeductible} onChange={v => set('liquorDeductible', v)} />
-                  </td>
-                </tr>
-              )}
-              {showOCP && (
-                <tr>
-                  <td className="px-4 py-3 text-xs font-semibold text-stone-600 whitespace-nowrap">OCP</td>
-                  <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.ocpBI} onChange={v => set('ocpBI', v)} /></td>
-                  <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.ocpPD} onChange={v => set('ocpPD', v)} /></td>
-                </tr>
-              )}
-              {showRailroad && (
-                <tr>
-                  <td className="px-4 py-3 text-xs font-semibold text-stone-600 whitespace-nowrap">Railroad</td>
-                  <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.railroadBI} onChange={v => set('railroadBI', v)} /></td>
-                  <td className="px-3 py-2"><Select searchable options={deductibleOptions} value={data.railroadPD} onChange={v => set('railroadPD', v)} /></td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        <div className="grid grid-cols-2 gap-4">
+          {showPremOps && <Select label="Premises/Operations BI Deductible" searchable options={deductibleOptions} value={data.premOpsBI} onChange={v => set('premOpsBI', v)} />}
+          {showProdComp && <Select label="Products/Completed Operations BI Deductible" searchable options={deductibleOptions} value={data.prodCompOpsBI} onChange={v => set('prodCompOpsBI', v)} />}
+          {showPremOps && <Select label="Premises/Operations PD Deductible" searchable options={deductibleOptions} value={data.premOpsPD} onChange={v => set('premOpsPD', v)} />}
+          {showProdComp && <Select label="Products/Completed Operations PD Deductible" searchable options={deductibleOptions} value={data.prodCompOpsPD} onChange={v => set('prodCompOpsPD', v)} />}
+          {showPremOps && <Select label="Premises/Operations BI and PD Deductible" searchable options={deductibleOptions} value={data.premOpsBIandPD} onChange={v => set('premOpsBIandPD', v)} />}
+          {showProdComp && <Select label="Products/Completed Operations BI and PD Deductible" searchable options={deductibleOptions} value={data.prodCompOpsBIandPD} onChange={v => set('prodCompOpsBIandPD', v)} />}
+          {showLiquor && <Select label="Liquor Deductible" searchable options={deductibleOptions} value={data.liquorDeductible} onChange={v => set('liquorDeductible', v)} />}
+          {showOCP && <Select label="OCP BI Deductible" searchable options={deductibleOptions} value={data.ocpBI} onChange={v => set('ocpBI', v)} />}
+          {showOCP && <Select label="OCP PD Deductible" searchable options={deductibleOptions} value={data.ocpPD} onChange={v => set('ocpPD', v)} />}
+          {showRailroad && <Select label="Railroad BI Deductible" searchable options={deductibleOptions} value={data.railroadBI} onChange={v => set('railroadBI', v)} />}
+          {showRailroad && <Select label="Railroad PD Deductible" searchable options={deductibleOptions} value={data.railroadPD} onChange={v => set('railroadPD', v)} />}
+          <Select label="Coverage Form" options={coverageForms} value={data.coverageForm} onChange={v => set('coverageForm', v)} />
+          <Select label="Legal Entity" options={legalEntityOpts} value={data.legalEntity} onChange={v => set('legalEntity', v)} />
+          <Select
+            label="Limited Coverage For Designated Unmanned Aircraft"
+            options={yesNoOpts}
+            value={data.limitedCoverageUnmannedAircraft ? 'Yes' : 'No'}
+            onChange={v => set('limitedCoverageUnmannedAircraft', v === 'Yes')}
+          />
+        </div>
+      </Card>
+
+      {/* ── Experience Rating and Schedule Rating ── */}
+      <Card title="Experience Rating and Schedule Rating">
+        <div className="grid grid-cols-2 gap-4">
+          <Select
+            label="Experience Rating"
+            options={yesNoOpts}
+            value={data.experienceRating ? 'Yes' : 'No'}
+            onChange={v => set('experienceRating', v === 'Yes')}
+          />
+          <Select
+            label="Schedule Rating"
+            options={yesNoOpts}
+            value={data.scheduleRating ? 'Yes' : 'No'}
+            onChange={v => set('scheduleRating', v === 'Yes')}
+          />
+          <div className="col-span-2">
+            <Select
+              label="Terrorism Risk Insurance Program (TRIP) terminates before policy expiration date"
+              options={yesNoOpts}
+              value={data.tripTerminatesEarly ? 'Yes' : 'No'}
+              onChange={v => set('tripTerminatesEarly', v === 'Yes')}
+            />
+          </div>
+          <Select
+            label="Accept Certified Acts of Terrorism Coverage"
+            options={yesNoOpts}
+            value={data.acceptTerrorismCoverage ? 'Yes' : 'No'}
+            onChange={v => set('acceptTerrorismCoverage', v === 'Yes')}
+          />
+          <Select
+            label="Composite Rating Applies"
+            options={yesNoOpts}
+            value={data.compositeRating ? 'Yes' : 'No'}
+            onChange={v => set('compositeRating', v === 'Yes')}
+          />
         </div>
       </Card>
 
       {/* ── Additional Coverages ── */}
       <Card title="Additional Coverages">
-        <div className="space-y-2 mb-3">
-          {(data.additionalCoverages || []).length === 0 && (
-            <p className="text-xs text-stone-400 italic py-2">No additional coverages added.</p>
-          )}
-          {(data.additionalCoverages || []).map(c => (
-            <div key={c.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-stone-50 border border-stone-100">
-              <span className="flex-1 text-sm text-stone-700">{c.name}</span>
-              <button
-                type="button"
-                onClick={() => removeCoverage(c.id)}
-                className="p-1 rounded text-stone-400 hover:text-crimson-500 hover:bg-crimson-50 transition-colors"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          ))}
-        </div>
-        {/* Add from catalog */}
-        <div className="flex items-center gap-2 pt-3 border-t border-stone-100">
+        <div className="flex items-center gap-2 mb-2">
           <select
             value={newCoverage}
             onChange={e => setNewCoverage(e.target.value)}
-            className="flex-1 px-3 py-2 text-sm border border-stone-200 rounded-lg bg-stone-50 focus:outline-none focus:ring-2 focus:ring-ink-400 focus:border-ink-400 text-stone-700"
+            className="flex-1 px-2.5 py-1.5 text-xs border border-stone-200 rounded-lg bg-stone-50 focus:outline-none focus:ring-2 focus:ring-ink-400 focus:border-ink-400 text-stone-700"
           >
             <option value="">Select additional coverage…</option>
             {ADDITIONAL_COVERAGES_CATALOG.filter(name =>
@@ -633,77 +600,37 @@ export default function Step2_RiskCoverage({ data, onChange }) {
             type="button"
             onClick={addCoverage}
             disabled={!newCoverage}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-ink-800 text-white rounded-lg hover:bg-ink-700 disabled:opacity-40 transition-colors shrink-0"
+            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold bg-ink-800 text-white rounded-lg hover:bg-ink-700 disabled:opacity-40 transition-colors shrink-0"
           >
-            <Plus className="h-3.5 w-3.5" /> Add
+            <Plus className="h-3 w-3" /> Add
           </button>
         </div>
+        {(data.additionalCoverages || []).length > 0 && (
+          <div className="space-y-1">
+            {(data.additionalCoverages || []).map(c => (
+              <div key={c.id} className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-stone-50 border border-stone-100">
+                <span className="flex-1 text-xs text-stone-700">{c.name}</span>
+                <button
+                  type="button"
+                  onClick={() => removeCoverage(c.id)}
+                  className="p-0.5 rounded text-stone-400 hover:text-crimson-500 hover:bg-crimson-50 transition-colors"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </Card>
-
-      {/* Loss Control Requirements collapsible removed — Post-Bind Loss Control Override lives at LOB tab level */}
-
-      {/* ── Coverage Flags — collapsible with active badge ── */}
-      <CollapsibleSection title="Coverage Options &amp; Flags" badge={activeFlagCount}>
-        <div className="pt-4 grid grid-cols-2 gap-x-8 gap-y-3">
-          {/* Always-visible flags */}
-          {[
-            ['stopGapCoverage',        'Stop Gap Coverage'],
-            ['medPayExclusion',        'Med Pay Exclusion'],
-            ['cyberIncidentLiability', 'Cyber Incident Liability'],
-            ['lossOfElectronicData',   'Loss Of Electronic Data'],
-            ['experienceRating',       'Experience Rating'],
-            ['scheduleRating',         'Schedule Rating'],
-            ['acceptTerrorismCoverage','Accept Terrorism Coverage'],
-            ['compositeRating',        'Composite Rating'],
-            ['tripTerminatesEarly',    'TRIP Terminates Early'],
-            ['ndPesticideApplicator',  'ND Pesticide Applicator'],
-          ].map(([k, label]) => (
-            <div key={k} className="flex items-center justify-between py-1">
-              <span className="text-sm text-stone-700">{label}</span>
-              <Toggle checked={!!data[k]} onChange={v => set(k, v)} />
-            </div>
-          ))}
-
-          {/* Prem/Ops only */}
-          {showPremOps && (
-            <div className="flex items-center justify-between py-1">
-              <span className="text-sm text-stone-700">Governmental Subdivision</span>
-              <Toggle checked={!!data.governmentalSubdivision} onChange={v => set('governmentalSubdivision', v)} />
-            </div>
-          )}
-          {showPremOps && (
-            <div className="flex items-center justify-between py-1">
-              <span className="text-sm text-stone-700">Unmanned Aircraft</span>
-              <Toggle checked={!!data.limitedCoverageUnmannedAircraft} onChange={v => set('limitedCoverageUnmannedAircraft', v)} />
-            </div>
-          )}
-
-          {/* Prod/Comp sublines only */}
-          {showProdComp && (
-            <div className="flex items-center justify-between py-1">
-              <span className="text-sm text-stone-700">Limited Product Withdrawal</span>
-              <Toggle checked={!!data.limitedProductWithdrawal} onChange={v => set('limitedProductWithdrawal', v)} />
-            </div>
-          )}
-
-          {/* Non-special sublines only */}
-          {!showSpecial && (
-            <div className="flex items-center justify-between py-1">
-              <span className="text-sm text-stone-700">Size Of Risk Rating</span>
-              <Toggle checked={!!data.sizeOfRiskRating} onChange={v => set('sizeOfRiskRating', v)} />
-            </div>
-          )}
-        </div>
-      </CollapsibleSection>
 
       {/* ── Minimum Premium — collapsible ── */}
       <CollapsibleSection title="Minimum Premium">
         <div className="pt-4 space-y-1">
           {showPremOps && (
-            <p className="text-sm text-stone-500 py-1">Premises/Ops Premium To Reach Minimum</p>
+            <p className="text-sm text-stone-500 py-1">Premises/Operations Premium To Reach Minimum</p>
           )}
           {showProdComp && (
-            <p className="text-sm text-stone-500 py-1">Products/Comp Ops Premium To Reach Minimum</p>
+            <p className="text-sm text-stone-500 py-1">Products/Completed Operations Premium To Reach Minimum</p>
           )}
           {showPremOps && showProdComp && (
             <p className="text-sm text-stone-500 py-1">Special Combined Premium To Reach Minimum</p>
@@ -717,53 +644,8 @@ export default function Step2_RiskCoverage({ data, onChange }) {
           {showRailroad && (
             <p className="text-sm text-stone-500 py-1">Railroad Premium To Reach Minimum</p>
           )}
-          <p className="text-sm text-stone-500 py-1">Policy Premium To Reach Minimum</p>
-        </div>
-      </CollapsibleSection>
-
-      {/* ── Additional Notes — collapsible ── */}
-      <CollapsibleSection title="Additional Notes &amp; Documentation">
-        <div className="pt-4 space-y-4">
-          <div>
-            <label className="form-label mb-1.5">Diligent Effort Documentation</label>
-            <textarea
-              rows={3}
-              value={data.diligentEffortDocumentation || ''}
-              onChange={e => set('diligentEffortDocumentation', e.target.value)}
-              placeholder="Document diligent effort for surplus lines…"
-              className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-ink-400 focus:border-ink-400 bg-stone-50 placeholder-stone-300 resize-none"
-            />
-          </div>
-          <div>
-            <label className="form-label mb-1.5">Additional Text for Quote</label>
-            <textarea
-              rows={3}
-              value={data.additionalTextForQuote || ''}
-              onChange={e => set('additionalTextForQuote', e.target.value)}
-              placeholder="Additional text to appear on the quote proposal…"
-              className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-ink-400 focus:border-ink-400 bg-stone-50 placeholder-stone-300 resize-none"
-            />
-          </div>
-          <div>
-            <label className="form-label mb-1.5">Additional Coverage Detail</label>
-            <textarea
-              rows={3}
-              value={data.additionalCoverageDetail || ''}
-              onChange={e => set('additionalCoverageDetail', e.target.value)}
-              placeholder="Describe any additional coverage details…"
-              className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-ink-400 focus:border-ink-400 bg-stone-50 placeholder-stone-300 resize-none"
-            />
-          </div>
-          <div className="max-w-xs">
-            <Input
-              label="Additional Policy Fee"
-              type="number"
-              value={data.additionalPolicyFee ?? ''}
-              onChange={e => set('additionalPolicyFee', e.target.value === '' ? '' : Number(e.target.value))}
-              prefix="$"
-              placeholder="0"
-            />
-          </div>
+          {/* Always show Policy Premium To Reach Minimum at the bottom */}
+          <p className="text-sm text-stone-700 font-semibold py-1">Policy Premium To Reach Minimum</p>
         </div>
       </CollapsibleSection>
 

@@ -1,5 +1,6 @@
 import Card from '../../ui/Card'
 import Input from '../../ui/Input'
+import Select from '../../ui/Select'
 
 function SectionRule({ color, children }) {
   return (
@@ -70,6 +71,37 @@ export default function SubmissionInfoCard({ data, onChange }) {
           <SectionRule color="bg-ink-400">Billing</SectionRule>
           <div className="grid grid-cols-2 gap-4 mb-3">
             <BillingToggle value={data.billingMethod} onChange={v => set('billingMethod', v)} />
+          </div>
+          <div className="bg-stone-50 rounded-xl border border-stone-100 px-4 py-3">
+            <div className="grid grid-cols-2 gap-6 items-end">
+              <Select
+                label="Installments Allowed Override"
+                options={['Annual', 'Semi-Annual', 'Quarterly', '9 Payments']}
+                value={data.installmentsAllowed || ''}
+                onChange={v => set('installmentsAllowed', v)}
+                placeholder="Select..."
+              />
+              <div className="mb-1.5">
+                <Toggle
+                  label="Apply Latest ERC Version"
+                  checked={!!data.applyLatestERC}
+                  onChange={v => set('applyLatestERC', v)}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Agency & Agent */}
+        <div>
+          <SectionRule color="bg-ink-400">Agency Information</SectionRule>
+          <div className="grid grid-cols-2 gap-4 mb-3">
+            <Input
+              label="Agency Name" required
+              value={data.agencyName || ''}
+              onChange={e => set('agencyName', e.target.value)}
+              placeholder="Agency name"
+            />
             <Input
               label="Default Commission %"
               type="number"
@@ -78,28 +110,21 @@ export default function SubmissionInfoCard({ data, onChange }) {
               placeholder="12.5"
             />
           </div>
-          <div className="bg-stone-50 rounded-xl border border-stone-100 px-4 py-3 space-y-2.5">
-            <Toggle
-              label="Installments Allowed Override"
-              checked={!!data.installmentsAllowed}
-              onChange={v => set('installmentsAllowed', v)}
-            />
-            <Toggle
-              label="Apply Latest ERC Version"
-              checked={!!data.applyLatestERC}
-              onChange={v => set('applyLatestERC', v)}
-            />
-          </div>
-        </div>
-
-        {/* Agency */}
-        <div>
-          <SectionRule color="bg-ink-400">Agency</SectionRule>
           <Input
             label="Agency Legal Entity Name"
             value={data.agencyLegalEntityName || ''}
             onChange={e => set('agencyLegalEntityName', e.target.value)}
             placeholder="Full legal name of agency"
+          />
+        </div>
+
+        <div>
+          <SectionRule color="bg-ink-400">Agent Information</SectionRule>
+          <Input
+            label="Agent Name" required
+            value={data.agentName || ''}
+            onChange={e => set('agentName', e.target.value)}
+            placeholder="Agent full name"
           />
         </div>
 
@@ -122,10 +147,45 @@ export default function SubmissionInfoCard({ data, onChange }) {
           </div>
         </div>
 
+        {/* Dates */}
+        <div>
+          <SectionRule color="bg-sage-400">Dates</SectionRule>
+          <div className="grid grid-cols-2 gap-4 mb-3">
+            <Input
+              label="Receive Date" type="date"
+              value={data.receiveDate || ''}
+              onChange={e => set('receiveDate', e.target.value)}
+            />
+            <Input
+              label="Need By Date" type="date"
+              value={data.needByDate || ''}
+              onChange={e => set('needByDate', e.target.value)}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Policy Effective Date" required type="date"
+              value={data.policyEffectiveDate || ''}
+              onChange={e => set('policyEffectiveDate', e.target.value)}
+            />
+            <Input
+              label="Policy Expiration Date" required type="date"
+              value={data.policyExpirationDate || ''}
+              onChange={e => set('policyExpirationDate', e.target.value)}
+            />
+          </div>
+        </div>
+
         {/* Staff */}
         <div>
           <SectionRule color="bg-amber-400">Staff</SectionRule>
           <div className="grid grid-cols-2 gap-4 mb-3">
+            <Input
+              label="Underwriter Name"
+              value={data.uwName || ''}
+              onChange={e => set('uwName', e.target.value)}
+              placeholder="Full name"
+            />
             <Input
               label="Underwriter Email"
               type="email"
@@ -133,7 +193,6 @@ export default function SubmissionInfoCard({ data, onChange }) {
               onChange={e => set('uwEmail', e.target.value)}
               placeholder="uw@company.com"
             />
-            <div />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <Input

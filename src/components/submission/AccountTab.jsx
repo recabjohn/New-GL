@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Button from '../ui/Button'
 import AccountInfoCard from './account/AccountInfoCard'
-import AddressCard from './account/AddressCard'
 import LOBSelector from './account/LOBSelector'
 import ContactsTable from './account/ContactsTable'
 import NamedInsuredTable from './account/NamedInsuredTable'
@@ -52,7 +51,7 @@ export default function AccountTab() {
 
   const sections = [
     ['Account Info',      true],
-    ['Mailing Address',   !!data.address?.line1],
+    ['Address',           !!data.address?.line1],
     ['Contacts',          (data.contacts?.length || 0) > 0],
     ['Named Insureds',    (data.namedInsureds?.length || 0) > 0],
     ['Lines of Business', (data.selectedLOBs?.length || 0) > 0],
@@ -65,7 +64,6 @@ export default function AccountTab() {
         {/* Main column */}
         <div className="col-span-2 space-y-5">
           <AccountInfoCard    data={data}                   onChange={setData} />
-          <AddressCard        data={data.address}           onChange={setAddress} />
           <ContactsTable      contacts={data.contacts}      onChange={setContacts} />
           <NamedInsuredTable  insureds={data.namedInsureds} onChange={setInsureds} />
           <SubmissionInfoCard data={data}                   onChange={setSubInfo} />

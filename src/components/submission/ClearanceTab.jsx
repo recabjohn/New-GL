@@ -10,7 +10,7 @@ import {
   Flag, MapPin, Info,
 } from 'lucide-react'
 import Toggle from '../ui/Toggle'
-import AddressMap, { lookupZip, geocodeAddress, reverseGeocodeLatLng } from './AddressMap'
+import AddressMap, { lookupZip, geocodeAddress, reverseGeocodeLatLng, searchAddresses } from './AddressMap'
 import useFieldValidation from '../../hooks/useFieldValidation'
 
 const agentsByAgency = {
@@ -334,6 +334,8 @@ export default function ClearanceTab({ submission, onNext }) {
   const [phone, setPhone]               = useState('')
   const [fein, setFein]                 = useState('')
   const [mapCenter, setMapCenter]       = useState(null)
+  const [suggestions, setSuggestions]   = useState([])
+  const suggestionsRef = useRef(null)
   const zipLookupRef = useRef(null)
 
   // Inline field validation
@@ -389,24 +391,41 @@ export default function ClearanceTab({ submission, onNext }) {
     }
   }, [])
 
-  // Full address search → forward geocode → fill fields + center map
-  const handleAddressSearch = useCallback(async (e) => {
+  // Full address search → show autocomplete suggestions
+  const searchRef = useRef(null)
+  const handleAddressSearch = useCallback((e) => {
     const val = e.target.value
     setFullAddress(val)
-    if (val.length < 8) return
-    if (zipLookupRef.current) clearTimeout(zipLookupRef.current)
-    zipLookupRef.current = setTimeout(async () => {
-      const data = await geocodeAddress(val)
-      if (data) {
-        setAddressLine1(data.addressLine1)
-        setCity(data.city)
-        setState(data.state)
-        setCounty(data.county)
-        setZipcode(data.zipcode)
-        setCountry(data.country)
-        setMapCenter([data.lat, data.lng])
+    if (searchRef.current) clearTimeout(searchRef.current)
+    if (val.length < 3) { setSuggestions([]); return }
+    searchRef.current = setTimeout(async () => {
+      const results = await searchAddresses(val)
+      setSuggestions(results)
+    }, 400)
+  }, [])
+
+  // Select a suggestion → fill all fields, close dropdown, center map
+  const handleSelectSuggestion = useCallback((s) => {
+    setFullAddress(s.displayName)
+    setAddressLine1(s.addressLine1)
+    setCity(s.city)
+    setState(s.state)
+    setCounty(s.county)
+    setZipcode(s.zipcode)
+    setCountry(s.country)
+    setMapCenter([s.lat, s.lng])
+    setSuggestions([])
+  }, [])
+
+  // Close suggestions dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(e.target)) {
+        setSuggestions([])
       }
-    }, 800)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   // Visual countdown → auto advance
@@ -468,8 +487,22 @@ export default function ClearanceTab({ submission, onNext }) {
               </div>
 
               {/* Address with interactive map */}
-              <div>
-                <Input label="Enter Full Address" required value={fullAddress} onChange={handleAddressSearch} placeholder="Start typing to search..." {...vProps('fullAddress', fullAddress)} />
+              <div className="relative" ref={suggestionsRef}>
+                <Input label="Enter Full Address" required value={fullAddress} onChange={handleAddressSearch} placeholder="Start typing to search..." {...vProps('fullAddress', fullAddress)} onFocus={() => { if (suggestions.length) setSuggestions(suggestions) }} />
+                {suggestions.length > 0 && (
+                  <ul className="absolute z-[9999] left-0 right-0 mt-1 bg-white border border-stone-200 rounded-lg shadow-lg max-h-52 overflow-y-auto">
+                    {suggestions.map((s, i) => (
+                      <li
+                        key={i}
+                        className="px-3 py-2 text-sm text-stone-700 hover:bg-flame-50 hover:text-flame-700 cursor-pointer flex items-start gap-2"
+                        onMouseDown={() => handleSelectSuggestion(s)}
+                      >
+                        <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-stone-400" />
+                        <span className="line-clamp-2">{s.displayName}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 <AddressMap center={mapCenter} onMapClick={handleMapClick} />
                 <p className="text-[10px] text-stone-400 mt-1">Click on the map to auto-fill the address fields</p>
               </div>

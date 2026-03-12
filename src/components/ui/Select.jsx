@@ -22,7 +22,10 @@ export default function Select({
         panelRef.current && !panelRef.current.contains(e.target)
       ) setOpen(false)
     }
-    const closeOnScroll = () => setOpen(false)
+    const closeOnScroll = e => {
+      if (panelRef.current && panelRef.current.contains(e.target)) return
+      setOpen(false)
+    }
     document.addEventListener('mousedown', handler)
     window.addEventListener('scroll', closeOnScroll, true)
     window.addEventListener('resize', closeOnScroll)

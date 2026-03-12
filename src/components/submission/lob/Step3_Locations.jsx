@@ -4,6 +4,7 @@ import Button from '../../ui/Button'
 import Modal from '../../ui/Modal'
 import Input from '../../ui/Input'
 import Select from '../../ui/Select'
+import { useToast } from '../../ui/Toast'
 import { deductibleOptions, usStates } from '../../../data/mockData'
 import { Plus, X, MoreVertical, MapPin, AlertTriangle, Pencil, Check } from 'lucide-react'
 
@@ -12,7 +13,8 @@ import { Plus, X, MoreVertical, MapPin, AlertTriangle, Pencil, Check } from 'luc
 // ---------------------------------------------------------------------------
 
 const premiumBasisOpts     = ['Gross Sales', 'Payroll', 'Area (Sq Ft)', 'Units', 'Admissions', 'Other']
-const classTypeOpts        = ['Mercantile', 'Service', 'Contractor', 'Manufacturing', 'Other']
+const premOpsCoverageOpts  = ['Premises/Operations', 'Premises Only', 'Operations Only']
+const prodCompCoverageOpts = ['Products/Completed Operations', 'Products Only', 'Completed Operations Only']
 const litigationHazardOpts = ['Low', 'Average', 'High', 'Very High']
 const mainOpsOpts          = ['Manufacturing', 'Mercantile', 'Service', 'Contractor', 'Office', 'Warehouse', 'Other']
 
@@ -44,48 +46,6 @@ const STATE_ABBR_TO_NAME = {
 const STATE_NAME_TO_ABBR = Object.fromEntries(
   Object.entries(STATE_ABBR_TO_NAME).map(([abbr, name]) => [name, abbr])
 )
-
-// ZIP code lookup (representative US ZIPs)
-const ZIP_DB = {
-  '60601': { city: 'Chicago',        state: 'IL' }, '60609': { city: 'Chicago',        state: 'IL' },
-  '60714': { city: 'Niles',          state: 'IL' }, '10001': { city: 'New York',       state: 'NY' },
-  '10036': { city: 'New York',       state: 'NY' }, '11201': { city: 'Brooklyn',       state: 'NY' },
-  '90001': { city: 'Los Angeles',    state: 'CA' }, '90210': { city: 'Beverly Hills',  state: 'CA' },
-  '94102': { city: 'San Francisco',  state: 'CA' }, '95101': { city: 'San Jose',       state: 'CA' },
-  '92101': { city: 'San Diego',      state: 'CA' }, '77001': { city: 'Houston',        state: 'TX' },
-  '75201': { city: 'Dallas',         state: 'TX' }, '78201': { city: 'San Antonio',    state: 'TX' },
-  '78701': { city: 'Austin',         state: 'TX' }, '79901': { city: 'El Paso',        state: 'TX' },
-  '85001': { city: 'Phoenix',        state: 'AZ' }, '85701': { city: 'Tucson',         state: 'AZ' },
-  '85281': { city: 'Tempe',          state: 'AZ' }, '19101': { city: 'Philadelphia',   state: 'PA' },
-  '15201': { city: 'Pittsburgh',     state: 'PA' }, '30301': { city: 'Atlanta',        state: 'GA' },
-  '28201': { city: 'Charlotte',      state: 'NC' }, '27601': { city: 'Raleigh',        state: 'NC' },
-  '80201': { city: 'Denver',         state: 'CO' }, '80014': { city: 'Aurora',         state: 'CO' },
-  '32801': { city: 'Orlando',        state: 'FL' }, '33101': { city: 'Miami',          state: 'FL' },
-  '33601': { city: 'Tampa',          state: 'FL' }, '32201': { city: 'Jacksonville',   state: 'FL' },
-  '98101': { city: 'Seattle',        state: 'WA' }, '97201': { city: 'Portland',       state: 'OR' },
-  '02101': { city: 'Boston',         state: 'MA' }, '02902': { city: 'Providence',     state: 'RI' },
-  '48201': { city: 'Detroit',        state: 'MI' }, '49503': { city: 'Grand Rapids',   state: 'MI' },
-  '89101': { city: 'Las Vegas',      state: 'NV' }, '89501': { city: 'Reno',           state: 'NV' },
-  '40201': { city: 'Louisville',     state: 'KY' }, '37201': { city: 'Nashville',      state: 'TN' },
-  '38101': { city: 'Memphis',        state: 'TN' }, '53201': { city: 'Milwaukee',      state: 'WI' },
-  '53701': { city: 'Madison',        state: 'WI' }, '70112': { city: 'New Orleans',    state: 'LA' },
-  '70801': { city: 'Baton Rouge',    state: 'LA' }, '43201': { city: 'Columbus',       state: 'OH' },
-  '44101': { city: 'Cleveland',      state: 'OH' }, '45201': { city: 'Cincinnati',     state: 'OH' },
-  '73101': { city: 'Oklahoma City',  state: 'OK' }, '74101': { city: 'Tulsa',          state: 'OK' },
-  '67201': { city: 'Wichita',        state: 'KS' }, '46201': { city: 'Indianapolis',   state: 'IN' },
-  '63101': { city: 'St. Louis',      state: 'MO' }, '64101': { city: 'Kansas City',    state: 'MO' },
-  '55401': { city: 'Minneapolis',    state: 'MN' }, '55101': { city: 'St. Paul',       state: 'MN' },
-  '84101': { city: 'Salt Lake City', state: 'UT' }, '87101': { city: 'Albuquerque',    state: 'NM' },
-  '35201': { city: 'Birmingham',     state: 'AL' }, '36101': { city: 'Montgomery',     state: 'AL' },
-  '72201': { city: 'Little Rock',    state: 'AR' }, '39201': { city: 'Jackson',        state: 'MS' },
-  '29201': { city: 'Columbia',       state: 'SC' }, '29401': { city: 'Charleston',     state: 'SC' },
-  '23220': { city: 'Richmond',       state: 'VA' }, '20001': { city: 'Washington',     state: 'DC' },
-  '21201': { city: 'Baltimore',      state: 'MD' }, '06101': { city: 'Hartford',       state: 'CT' },
-  '07101': { city: 'Newark',         state: 'NJ' }, '08101': { city: 'Camden',         state: 'NJ' },
-  '58501': { city: 'Bismarck',       state: 'ND' }, '57101': { city: 'Sioux Falls',    state: 'SD' },
-  '59101': { city: 'Billings',       state: 'MT' }, '83701': { city: 'Boise',          state: 'ID' },
-  '99501': { city: 'Anchorage',      state: 'AK' }, '96801': { city: 'Honolulu',       state: 'HI' },
-}
 
 // Classification-level additional coverages catalog
 const CLASS_COVERAGES_CATALOG = [
@@ -176,10 +136,13 @@ function blankLocForm() {
 function blankClassForm() {
   return {
     classCode: '', classDescription: '', classificationType: 'Mercantile',
-    productCoverageOnly: false, highHazardCode: false, ifAnyBasis: false,
-    premiumBasis: 'Gross Sales', exposure: '',
+    productCoverageOnly: false, highHazardCode: false,
+    premOpsCoverage: 'Premises/Operations',
     premOpsBIDeductible: 'No Deductible', premOpsPDDeductible: 'No Deductible', premOpsBIandPDDeductible: 'No Deductible',
+    premOpsPremiumBasis: 'Gross Sales', premOpsIfAnyBasis: false, premOpsExposure: '',
+    prodCompOpsCoverage: 'Products/Completed Operations',
     prodCompOpsBIDeductible: 'No Deductible', prodCompOpsPDDeductible: 'No Deductible', prodCompOpsBIandPDDeductible: 'No Deductible',
+    prodCompOpsPremiumBasis: 'Gross Sales', prodCompOpsIfAnyBasis: false, prodCompOpsExposure: '',
     additionalCoverages: [],
   }
 }
@@ -256,6 +219,7 @@ function ActionMenu({ onEdit, onDelete, onClose }) {
 export default function Step3_Locations({ data, onChange }) {
   const schedule    = data.stateSchedule || []
   const setSchedule = newSchedule => onChange({ ...data, stateSchedule: newSchedule })
+  const toast = useToast()
 
   const primaryEntry = schedule.find(s => s.isPrimary) || schedule[0]
   const [activeStateId, setActiveStateId] = useState(primaryEntry ? primaryEntry.id : null)
@@ -269,7 +233,6 @@ export default function Step3_Locations({ data, onChange }) {
   const [locOpen, setLocOpen]           = useState(false)
   const [editingLocId, setEditingLocId] = useState(null)
   const [locForm, setLocForm]           = useState(blankLocForm())
-  const [zipAutoFillCity, setZipAutoFillCity] = useState(null)
   const setLF = (k, v) => setLocForm(f => ({ ...f, [k]: v }))
 
   // Classification modal
@@ -307,12 +270,6 @@ export default function Step3_Locations({ data, onChange }) {
   // ---------------------------------------------------------------------------
   // Autofill handlers
   // ---------------------------------------------------------------------------
-
-  const handleZipChange = zip => {
-    const match = zip.length === 5 ? ZIP_DB[zip] : null
-    setLocForm(f => ({ ...f, zip, ...(match ? { city: match.city } : {}) }))
-    setZipAutoFillCity(match ? match.city : null)
-  }
 
   const handleClassCodeChange = code => {
     const desc = GL_CLASS_CODES[code]
@@ -353,7 +310,6 @@ export default function Step3_Locations({ data, onChange }) {
   const openAddLocation = () => {
     setLocForm(blankLocForm())
     setEditingLocId(null)
-    setZipAutoFillCity(null)
     setLocOpen(true)
   }
 
@@ -371,7 +327,6 @@ export default function Step3_Locations({ data, onChange }) {
       prodCompOpsTerritoryCode: loc.prodCompOpsTerritoryCode || '',
     })
     setEditingLocId(loc.id)
-    setZipAutoFillCity(null)
     setLocOpen(true)
   }
 
@@ -407,14 +362,21 @@ export default function Step3_Locations({ data, onChange }) {
         classCode: cls.classCode || '', classDescription: cls.classDescription || '',
         classificationType: cls.classificationType || 'Mercantile',
         productCoverageOnly: cls.productCoverageOnly || false,
-        highHazardCode: cls.highHazardCode || false, ifAnyBasis: cls.ifAnyBasis || false,
-        premiumBasis: cls.premiumBasis || 'Gross Sales', exposure: cls.exposure || '',
+        highHazardCode: cls.highHazardCode || false,
+        premOpsCoverage: cls.premOpsCoverage || 'Premises/Operations',
         premOpsBIDeductible: cls.premOpsBIDeductible || 'No Deductible',
         premOpsPDDeductible: cls.premOpsPDDeductible || 'No Deductible',
         premOpsBIandPDDeductible: cls.premOpsBIandPDDeductible || 'No Deductible',
+        premOpsPremiumBasis: cls.premOpsPremiumBasis || 'Gross Sales',
+        premOpsIfAnyBasis: cls.premOpsIfAnyBasis || false,
+        premOpsExposure: cls.premOpsExposure || '',
+        prodCompOpsCoverage: cls.prodCompOpsCoverage || 'Products/Completed Operations',
         prodCompOpsBIDeductible: cls.prodCompOpsBIDeductible || 'No Deductible',
         prodCompOpsPDDeductible: cls.prodCompOpsPDDeductible || 'No Deductible',
         prodCompOpsBIandPDDeductible: cls.prodCompOpsBIandPDDeductible || 'No Deductible',
+        prodCompOpsPremiumBasis: cls.prodCompOpsPremiumBasis || 'Gross Sales',
+        prodCompOpsIfAnyBasis: cls.prodCompOpsIfAnyBasis || false,
+        prodCompOpsExposure: cls.prodCompOpsExposure || '',
         additionalCoverages: cls.additionalCoverages || [],
       })
       setClassCodeKnown(!!GL_CLASS_CODES[cls.classCode])
@@ -428,13 +390,14 @@ export default function Step3_Locations({ data, onChange }) {
   }
 
   const saveClass = () => {
+    const isEdit = !!editingClassId
     const updatedSchedule = schedule.map(s => {
       if (s.id !== classTargetStateId) return s
       return {
         ...s,
         locations: (s.locations || []).map(l => {
           if (l.id !== classTargetLocId) return l
-          if (editingClassId) {
+          if (isEdit) {
             return { ...l, classifications: (l.classifications || []).map(c => c.id === editingClassId ? { ...classForm, id: c.id } : c) }
           }
           return { ...l, classifications: [...(l.classifications || []), { ...classForm, id: Date.now() }] }
@@ -442,13 +405,13 @@ export default function Step3_Locations({ data, onChange }) {
       }
     })
     setSchedule(updatedSchedule)
-    if (editingClassId) {
-      setEditingClassId(null)
-      setClassOpen(false)
-    } else {
-      setClassForm(blankClassForm())
-      setClassCodeKnown(false)
-    }
+    setEditingClassId(null)
+    setClassOpen(false)
+    const desc = classForm.classDescription || classForm.classCode || 'Classification'
+    toast.success(
+      isEdit ? 'Classification updated' : 'Classification added',
+      isEdit ? `${desc} has been saved.` : `${desc} has been added to this location.`
+    )
   }
 
   const deleteClass = (stateId, locId, classId) => {
@@ -668,42 +631,45 @@ export default function Step3_Locations({ data, onChange }) {
       >
         {/* ── Location Details ── */}
         <div className="space-y-4">
-          <Input
-            label="Location Name"
-            value={locForm.name}
-            onChange={e => setLF('name', e.target.value)}
-            placeholder="e.g. Main Office"
-          />
-
+          {/* Location Number (read-only) */}
           <div className="grid grid-cols-2 gap-4">
-            <Input label="Address Line 1" value={locForm.address} onChange={e => setLF('address', e.target.value)} placeholder="e.g. 123 Main St" />
+            <div>
+              <label className="form-label">Location Number</label>
+              <div className="px-3 py-2 text-sm font-mono font-semibold text-stone-700 bg-stone-50 border border-stone-200 rounded-lg">
+                {editingLocId
+                  ? (activeEntry?.locations || []).find(l => l.id === editingLocId)?.locationNumber ?? '—'
+                  : ((activeEntry?.locations || []).length + 1)}
+              </div>
+            </div>
+            <Input
+              label="Name"
+              value={locForm.name}
+              onChange={e => setLF('name', e.target.value)}
+              placeholder="e.g. Main Office"
+            />
+          </div>
+
+          <SectionHeading>Address</SectionHeading>
+          <div className="grid grid-cols-2 gap-4">
+            <Input label="Address Line 1" required value={locForm.address} onChange={e => setLF('address', e.target.value)} placeholder="e.g. 123 Main St" />
             <Input label="Address Line 2" value={locForm.address2} onChange={e => setLF('address2', e.target.value)} placeholder="Suite, Floor, etc." />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             {/* City — shows auto-fill badge when filled from ZIP */}
             <div>
               <Input
-                label="City"
+                label="City" required
                 value={locForm.city}
-                onChange={e => { setLF('city', e.target.value); setZipAutoFillCity(null) }}
+                onChange={e => setLF('city', e.target.value)}
               />
-              {zipAutoFillCity && locForm.city === zipAutoFillCity && (
-                <AutoFillHint>Auto-filled from ZIP — you may edit</AutoFillHint>
-              )}
             </div>
-            {/* ZIP — triggers city auto-fill */}
-            <div>
-              <Input
-                label="ZIP Code"
-                value={locForm.zip}
-                onChange={e => handleZipChange(e.target.value)}
-                placeholder="e.g. 60609"
-                maxLength={5}
-              />
-              {zipAutoFillCity && (
-                <AutoFillHint>City matched to {zipAutoFillCity}</AutoFillHint>
-              )}
+          </div>
+          {/* State — auto-set from schedule, full width */}
+          <div>
+            <label className="form-label">State</label>
+            <div className="px-3 py-2 text-sm font-semibold text-stone-700 bg-stone-50 border border-stone-200 rounded-lg">
+              {activeEntry ? `${STATE_ABBR_TO_NAME[activeEntry.stateCode] || activeEntry.stateCode}${activeEntry.subline ? ` - ${activeEntry.subline}` : ''}` : '—'}
             </div>
           </div>
         </div>
@@ -721,37 +687,40 @@ export default function Step3_Locations({ data, onChange }) {
           <Select label="Main Operations at This Location" options={mainOpsOpts} value={locForm.mainOperations} onChange={v => setLF('mainOperations', v)} />
         </div>
 
-        {/* ── Territory Codes ── */}
+        {/* ── Deductibles ── */}
         {(showPremOps || showProdComp) && (
           <>
-            <SectionHeading>Territory Codes</SectionHeading>
+            <SectionHeading>DC-{activeEntry?.subline || 'Deductibles'}</SectionHeading>
+            {showPremOps && (
+              <div className="mb-3">
+                <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Premises/Operations</p>
+                <div className="grid grid-cols-3 gap-4">
+                  <Select label="BI Deductible"      searchable options={deductibleOptions} value={locForm.premOpsBI}      onChange={v => setLF('premOpsBI', v)} />
+                  <Select label="PD Deductible"      searchable options={deductibleOptions} value={locForm.premOpsPD}      onChange={v => setLF('premOpsPD', v)} />
+                  <Select label="BI and PD Deductible" searchable options={deductibleOptions} value={locForm.premOpsBIandPD} onChange={v => setLF('premOpsBIandPD', v)} />
+                </div>
+              </div>
+            )}
+            {showProdComp && (
+              <div>
+                <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Products/Completed Operations</p>
+                <div className="grid grid-cols-3 gap-4">
+                  <Select label="BI Deductible"      searchable options={deductibleOptions} value={locForm.prodCompOpsBI}      onChange={v => setLF('prodCompOpsBI', v)} />
+                  <Select label="PD Deductible"      searchable options={deductibleOptions} value={locForm.prodCompOpsPD}      onChange={v => setLF('prodCompOpsPD', v)} />
+                  <Select label="BI and PD Deductible" searchable options={deductibleOptions} value={locForm.prodCompOpsBIandPD} onChange={v => setLF('prodCompOpsBIandPD', v)} />
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ── Territory ── */}
+        {(showPremOps || showProdComp) && (
+          <>
+            <SectionHeading>Territory</SectionHeading>
             <div className="grid grid-cols-2 gap-4">
-              {showPremOps  && <Input label="Prem/Ops Territory Code"     value={locForm.premOpsTerritoryCode}     onChange={e => setLF('premOpsTerritoryCode', e.target.value)}     placeholder="e.g. 001" />}
-              {showProdComp && <Input label="Prod/Comp Ops Territory Code" value={locForm.prodCompOpsTerritoryCode} onChange={e => setLF('prodCompOpsTerritoryCode', e.target.value)} placeholder="e.g. 999" />}
-            </div>
-          </>
-        )}
-
-        {/* ── Prem/Ops Deductibles ── */}
-        {showPremOps && (
-          <>
-            <SectionHeading>Prem/Ops Deductibles</SectionHeading>
-            <div className="grid grid-cols-3 gap-4">
-              <Select label="BI Deductible"      searchable options={deductibleOptions} value={locForm.premOpsBI}      onChange={v => setLF('premOpsBI', v)} />
-              <Select label="PD Deductible"      searchable options={deductibleOptions} value={locForm.premOpsPD}      onChange={v => setLF('premOpsPD', v)} />
-              <Select label="BI & PD Deductible" searchable options={deductibleOptions} value={locForm.premOpsBIandPD} onChange={v => setLF('premOpsBIandPD', v)} />
-            </div>
-          </>
-        )}
-
-        {/* ── Prod/Comp Ops Deductibles ── */}
-        {showProdComp && (
-          <>
-            <SectionHeading>Prod/Comp Ops Deductibles</SectionHeading>
-            <div className="grid grid-cols-3 gap-4">
-              <Select label="BI Deductible"      searchable options={deductibleOptions} value={locForm.prodCompOpsBI}      onChange={v => setLF('prodCompOpsBI', v)} />
-              <Select label="PD Deductible"      searchable options={deductibleOptions} value={locForm.prodCompOpsPD}      onChange={v => setLF('prodCompOpsPD', v)} />
-              <Select label="BI & PD Deductible" searchable options={deductibleOptions} value={locForm.prodCompOpsBIandPD} onChange={v => setLF('prodCompOpsBIandPD', v)} />
+              {showPremOps  && <Input label="Premises/Operations Code"          value={locForm.premOpsTerritoryCode}     onChange={e => setLF('premOpsTerritoryCode', e.target.value)}     placeholder="e.g. 001" />}
+              {showProdComp && <Input label="Products/Completed Operations Code" value={locForm.prodCompOpsTerritoryCode} onChange={e => setLF('prodCompOpsTerritoryCode', e.target.value)} placeholder="e.g. 999" />}
             </div>
           </>
         )}
@@ -768,9 +737,7 @@ export default function Step3_Locations({ data, onChange }) {
         size="xl"
         footer={
           <>
-            <Button variant="secondary" onClick={() => { setClassOpen(false); setEditingClassId(null) }}>
-              {editingClassId ? 'Cancel' : 'Done'}
-            </Button>
+            <Button variant="secondary" onClick={() => { setClassOpen(false); setEditingClassId(null) }}>Cancel</Button>
             <Button variant="cta" onClick={saveClass} disabled={!classForm.classCode}>
               {editingClassId ? 'Save Changes' : 'Add Classification'}
             </Button>
@@ -791,7 +758,7 @@ export default function Step3_Locations({ data, onChange }) {
                     <div>
                       <p className="text-sm font-semibold text-stone-800">{cls.classDescription || cls.classCode}</p>
                       <p className="text-xs text-stone-400 mt-0.5">
-                        {cls.classificationType} · {cls.premiumBasis} · Exposure: {cls.exposure || '—'}
+                        {cls.classificationType} · {cls.premOpsPremiumBasis || cls.prodCompOpsPremiumBasis || '—'}{(cls.premOpsExposure || cls.prodCompOpsExposure) ? ` · Exp: ${cls.premOpsExposure || cls.prodCompOpsExposure}` : ''}
                       </p>
                     </div>
                   </div>
@@ -813,86 +780,97 @@ export default function Step3_Locations({ data, onChange }) {
           {editingClassId ? 'Edit Details' : existingClasses.length > 0 ? 'Add New Classification' : 'Classification Details'}
         </p>
 
-        {/* Class Code + Description with autofill */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* Row 1: Class # + Code + Description */}
+        <div className="grid gap-4 mb-4" style={{ gridTemplateColumns: '80px 1fr 1fr' }}>
           <div>
-            <Input
-              label="Class Code" required
-              value={classForm.classCode}
-              onChange={e => handleClassCodeChange(e.target.value)}
-              placeholder="e.g. 18078"
-            />
+            <label className="form-label">Class #</label>
+            <div className="px-2 py-2 text-sm font-mono font-bold text-ink-700 bg-ink-50 border border-ink-200 rounded-lg text-center">
+              {editingClassId
+                ? ((existingClasses.findIndex(c => c.id === editingClassId) + 1) || '—')
+                : (existingClasses.length + 1)}
+            </div>
+          </div>
+          <div>
+            <Input label="Class Code" required value={classForm.classCode} onChange={e => handleClassCodeChange(e.target.value)} placeholder="e.g. 18078" />
             {classCodeKnown && <AutoFillHint>Known ISO GL code</AutoFillHint>}
           </div>
           <div>
-            <Input
-              label="Class Description"
-              value={classForm.classDescription}
-              onChange={e => setCF('classDescription', e.target.value)}
-              placeholder="e.g. Ship Chandler Stores"
-            />
-            {classCodeKnown && <AutoFillHint>Description auto-filled — you may edit</AutoFillHint>}
+            <Input label="Class Description" value={classForm.classDescription} onChange={e => setCF('classDescription', e.target.value)} placeholder="e.g. Antique Stores" />
+            {classCodeKnown && <AutoFillHint>Auto-filled — you may edit</AutoFillHint>}
           </div>
         </div>
 
-        {/* Classification Type */}
-        <div className="mt-4">
-          <Select label="Classification Type" options={classTypeOpts} value={classForm.classificationType} onChange={v => setCF('classificationType', v)} />
-        </div>
-
-        {/* Product Coverage Only + High Hazard Code */}
-        <div className="grid grid-cols-2 gap-6 mt-5">
+        {/* Row 2: Flags strip */}
+        <div className="grid grid-cols-2 gap-4 mb-5 bg-stone-50 rounded-xl p-3.5 border border-stone-100">
           <div>
-            <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Product Coverage Only</p>
+            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Product Coverage Only</p>
             <YesNo value={classForm.productCoverageOnly} onChange={v => setCF('productCoverageOnly', v)} />
           </div>
           <div>
-            <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">High Hazard Code?</p>
+            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">High Hazard Code?</p>
             <YesNo value={classForm.highHazardCode} onChange={v => setCF('highHazardCode', v)} />
           </div>
         </div>
 
-        {/* ── Prem/Ops Deductibles ── */}
-        {clsShowPremOps && (
-          <>
-            <SectionHeading>Prem/Ops Deductibles</SectionHeading>
-            <div className="grid grid-cols-3 gap-4">
-              <Select label="BI Deductible"      searchable options={deductibleOptions} value={classForm.premOpsBIDeductible}      onChange={v => setCF('premOpsBIDeductible', v)} />
-              <Select label="PD Deductible"      searchable options={deductibleOptions} value={classForm.premOpsPDDeductible}      onChange={v => setCF('premOpsPDDeductible', v)} />
-              <Select label="BI & PD Deductible" searchable options={deductibleOptions} value={classForm.premOpsBIandPDDeductible} onChange={v => setCF('premOpsBIandPDDeductible', v)} />
-            </div>
-          </>
-        )}
+        {/* ── Subline premium panels (side-by-side when both apply) ── */}
+        {(clsShowPremOps || clsShowProdComp) && (
+          <div className={`grid gap-4 ${clsShowPremOps && clsShowProdComp ? 'grid-cols-2' : 'grid-cols-1'}`}>
 
-        {/* ── Prod/Comp Ops Deductibles ── */}
-        {clsShowProdComp && (
-          <>
-            <SectionHeading>Prod/Comp Ops Deductibles</SectionHeading>
-            <div className="grid grid-cols-3 gap-4">
-              <Select label="BI Deductible"      searchable options={deductibleOptions} value={classForm.prodCompOpsBIDeductible}      onChange={v => setCF('prodCompOpsBIDeductible', v)} />
-              <Select label="PD Deductible"      searchable options={deductibleOptions} value={classForm.prodCompOpsPDDeductible}      onChange={v => setCF('prodCompOpsPDDeductible', v)} />
-              <Select label="BI & PD Deductible" searchable options={deductibleOptions} value={classForm.prodCompOpsBIandPDDeductible} onChange={v => setCF('prodCompOpsBIandPDDeductible', v)} />
-            </div>
-          </>
-        )}
+            {/* Premises/Operations panel */}
+            {clsShowPremOps && (
+              <div className="rounded-xl border border-ink-100 bg-ink-25 p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-1 h-3.5 rounded-full bg-ink-500 shrink-0" />
+                  <p className="text-xs font-bold text-ink-700 uppercase tracking-widest">Premises/Operations</p>
+                </div>
+                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-3 pl-3">Premium</p>
+                <div className="space-y-3">
+                  <Select label="Coverage" required options={premOpsCoverageOpts} value={classForm.premOpsCoverage} onChange={v => setCF('premOpsCoverage', v)} />
+                  <div className="grid grid-cols-2 gap-3">
+                    <Select label="BI Deductible"  searchable options={deductibleOptions} value={classForm.premOpsBIDeductible} onChange={v => setCF('premOpsBIDeductible', v)} />
+                    <Select label="PD Deductible"  searchable options={deductibleOptions} value={classForm.premOpsPDDeductible} onChange={v => setCF('premOpsPDDeductible', v)} />
+                  </div>
+                  <Select label="BI and PD Deductible" searchable options={deductibleOptions} value={classForm.premOpsBIandPDDeductible} onChange={v => setCF('premOpsBIandPDDeductible', v)} />
+                  <Select label="Premium Basis" options={premiumBasisOpts} value={classForm.premOpsPremiumBasis} onChange={v => setCF('premOpsPremiumBasis', v)} />
+                  <div className="grid grid-cols-2 gap-3 items-end">
+                    <div>
+                      <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1.5">'If Any' Basis</p>
+                      <YesNo value={classForm.premOpsIfAnyBasis} onChange={v => setCF('premOpsIfAnyBasis', v)} />
+                    </div>
+                    <Input label="Exposure" required value={classForm.premOpsExposure} onChange={e => setCF('premOpsExposure', e.target.value)} placeholder="e.g. 1,500,000.00" />
+                  </div>
+                </div>
+              </div>
+            )}
 
-        {/* ── Rating Basis ── */}
-        <SectionHeading>Rating Basis</SectionHeading>
-        <div className="grid grid-cols-2 gap-4">
-          <Select label="Premium Basis" options={premiumBasisOpts} value={classForm.premiumBasis} onChange={v => setCF('premiumBasis', v)} />
-          <div>
-            <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">'If Any' Basis</p>
-            <YesNo value={classForm.ifAnyBasis} onChange={v => setCF('ifAnyBasis', v)} />
+            {/* Products/Completed Operations panel */}
+            {clsShowProdComp && (
+              <div className="rounded-xl border border-stone-200 bg-stone-50 p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-1 h-3.5 rounded-full bg-stone-400 shrink-0" />
+                  <p className="text-xs font-bold text-stone-600 uppercase tracking-widest">Products/Completed Ops</p>
+                </div>
+                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-3 pl-3">Premium</p>
+                <div className="space-y-3">
+                  <Select label="Coverage" required options={prodCompCoverageOpts} value={classForm.prodCompOpsCoverage} onChange={v => setCF('prodCompOpsCoverage', v)} />
+                  <div className="grid grid-cols-2 gap-3">
+                    <Select label="BI Deductible"  searchable options={deductibleOptions} value={classForm.prodCompOpsBIDeductible} onChange={v => setCF('prodCompOpsBIDeductible', v)} />
+                    <Select label="PD Deductible"  searchable options={deductibleOptions} value={classForm.prodCompOpsPDDeductible} onChange={v => setCF('prodCompOpsPDDeductible', v)} />
+                  </div>
+                  <Select label="BI and PD Deductible" searchable options={deductibleOptions} value={classForm.prodCompOpsBIandPDDeductible} onChange={v => setCF('prodCompOpsBIandPDDeductible', v)} />
+                  <Select label="Premium Basis" options={premiumBasisOpts} value={classForm.prodCompOpsPremiumBasis} onChange={v => setCF('prodCompOpsPremiumBasis', v)} />
+                  <div className="grid grid-cols-2 gap-3 items-end">
+                    <div>
+                      <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1.5">'If Any' Basis</p>
+                      <YesNo value={classForm.prodCompOpsIfAnyBasis} onChange={v => setCF('prodCompOpsIfAnyBasis', v)} />
+                    </div>
+                    <Input label="Exposure" required value={classForm.prodCompOpsExposure} onChange={e => setCF('prodCompOpsExposure', e.target.value)} placeholder="e.g. 1,500,000.00" />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-        <div className="mt-4">
-          <Input
-            label="Exposure" required
-            value={classForm.exposure}
-            onChange={e => setCF('exposure', e.target.value)}
-            placeholder="e.g. 1,000,000"
-          />
-        </div>
+        )}
 
         {/* ── Additional Coverages ── */}
         <SectionHeading>Additional Coverages</SectionHeading>
@@ -981,8 +959,7 @@ export default function Step3_Locations({ data, onChange }) {
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-stone-800 truncate">{cls.classDescription || '—'}</p>
                         <p className="text-xs text-stone-400 mt-0.5">
-                          {cls.classificationType} · {cls.premiumBasis}
-                          {cls.exposure ? ` · Exposure: ${cls.exposure}` : ''}
+                          {cls.classificationType} · {cls.premOpsPremiumBasis || cls.prodCompOpsPremiumBasis || '—'}{(cls.premOpsExposure || cls.prodCompOpsExposure) ? ` · Exp: ${cls.premOpsExposure || cls.prodCompOpsExposure}` : ''}
                         </p>
                       </div>
                     </div>

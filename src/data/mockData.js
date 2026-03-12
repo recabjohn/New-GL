@@ -34,7 +34,7 @@ export const submissions = [
   { id: 'SN129122', submissionNumber: 'SN129122', insuredName: 'Redstone Welding Inc.',   dba: 'Redstone',       agencyName: 'Coastal Commercial Group',      agentName: 'Priya Sharma',     priority: 'HIGH',   transactionType: 'RENEWAL',       status: 'Offered',     effectiveDate: '09/15/2026', expirationDate: '09/15/2027', assignee: 'adavis',       needByDate: '09/10/2026', createdDate: '03/03/2026', state: 'PA', annualRevenue: '$2,450,000', yearsInBusiness: 28, lossHistory: '3 losses — $94,100',  naicsCode: '332312', commission: 12.5 },
   { id: 'SN129123', submissionNumber: 'SN129123', insuredName: 'Valley Springs Gym',      dba: 'Valley Springs', agencyName: 'Hawthorne Risk Advisors, LLC', agentName: 'Michael Grant',    priority: 'LOW',    transactionType: 'NEW-BUSINESS',  status: 'Registered',  effectiveDate: '07/15/2026', expirationDate: '07/15/2027', assignee: 'jsmith',       needByDate: '07/08/2026', createdDate: '02/25/2026', state: 'OH', annualRevenue: '$760,000',   yearsInBusiness: 4,  lossHistory: 'Clean (0 losses)',    naicsCode: '713940', commission: 12.5 },
   { id: 'SN129124', submissionNumber: 'SN129124', insuredName: 'Desert Sun Solar LLC',    dba: 'Desert Sun',    agencyName: 'Meridian Specialty Lines',      agentName: 'Carlos Reyes',     priority: 'MEDIUM', transactionType: 'NEW-BUSINESS',  status: 'In Progress', effectiveDate: '10/01/2026', expirationDate: '10/01/2027', assignee: 'mrodriguez',   needByDate: '09/28/2026', createdDate: '03/05/2026', state: 'NC', annualRevenue: '$4,100,000', yearsInBusiness: 3,  lossHistory: 'Clean (0 losses)',    naicsCode: '238220', commission: 12.5 },
-  { id: 'SN129125', submissionNumber: 'SN129125', insuredName: 'New Submission', dba: '', agencyName: '', agentName: '', priority: 'MEDIUM', transactionType: 'NEW-BUSINESS', status: 'In Progress', effectiveDate: '', expirationDate: '', assignee: 'uiuxAdmin', needByDate: '', createdDate: '03/06/2026', state: 'IL', annualRevenue: '$200,000', yearsInBusiness: 2, lossHistory: 'Clean (0 losses)', naicsCode: '541211', commission: 12.5 },
+  { id: 'SN129125', submissionNumber: 'SN129125', insuredName: 'New Submission', dba: '', agencyName: '', agentName: '', priority: 'MEDIUM', transactionType: 'NEW-BUSINESS', status: 'In Progress', effectiveDate: '03/12/2026', expirationDate: '03/12/2027', assignee: 'uiuxAdmin', needByDate: '', createdDate: '03/06/2026', state: 'IL', annualRevenue: '$200,000', yearsInBusiness: 2, lossHistory: 'Clean (0 losses)', naicsCode: '541211', commission: 12.5 },
 ]
 
 // ---------------------------------------------------------------------------
@@ -72,9 +72,16 @@ export const account = {
   installmentsAllowed: true,
   agencyLegalEntityName: 'Hawthorne Risk Advisors, LLC',
   submissionNote: '',
+  uwName: 'uiuxAdmin',
   uwEmail: 'uiuxadmin@solaris.com',
   serviceSpecialistName: '',
   serviceSpecialistEmail: '',
+  receiveDate: '',
+  needByDate: '',
+  policyEffectiveDate: '2026-03-13',
+  policyExpirationDate: '2027-03-13',
+  agencyName: 'Hawthorne Risk Advisors, LLC',
+  agentName: 'Michael Grant',
   applyLatestERC: true,
   contacts: [],
   namedInsureds: [],
