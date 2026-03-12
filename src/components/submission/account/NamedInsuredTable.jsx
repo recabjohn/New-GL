@@ -12,7 +12,7 @@ const EMPTY_FORM = { name: '', dba: '', relationship: '' }
 
 function InsuredAvatar({ name }) {
   const initials = name ? name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) : 'IN'
-  const palette  = ['bg-ink-700', 'bg-flame-500', 'bg-sage-500', 'bg-amber-500']
+  const palette  = ['bg-ink-700', 'bg-ink-500', 'bg-sage-500', 'bg-amber-500']
   const bg       = palette[(name?.charCodeAt(0) || 0) % palette.length]
   return (
     <div className={`w-7 h-7 rounded-lg ${bg} text-white text-[10px] font-bold flex items-center justify-center shrink-0`}>

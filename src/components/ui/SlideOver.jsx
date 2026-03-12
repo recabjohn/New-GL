@@ -22,7 +22,7 @@ export default function SlideOver({ open, onClose, title, subtitle, children, fo
             <h2 className="text-base font-semibold text-stone-900">{title}</h2>
             {subtitle && <p className="text-sm text-stone-500 mt-0.5">{subtitle}</p>}
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-md text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors mt-0.5">
+          <button onClick={onClose} aria-label="Close panel" className="p-1.5 rounded-md text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors mt-0.5">
             <X className="h-5 w-5" />
           </button>
         </div>

@@ -95,7 +95,7 @@ export default function SubmissionHeader({ submission, lobComplete = false }) {
                   >Quote</Button>
                 </>
               )}
-              <button className="p-2 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors">
+              <button aria-label="More actions" className="p-2 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors">
                 <MoreHorizontal className="h-4 w-4" />
               </button>
             </div>

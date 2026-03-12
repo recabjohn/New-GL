@@ -7,6 +7,7 @@ import {
   Loader2, Eye,
 } from 'lucide-react'
 import { useToast } from '../components/ui/Toast'
+import Button from '../components/ui/Button'
 import { quote } from '../data/mockData'
 
 // ── Document base data ────────────────────────────────────────────────────────
@@ -68,7 +69,7 @@ function TypeBadge({ type }) {
 const AVATAR_COLORS = {
   uiuxAdmin:  'bg-ink-700',
   jsmith:     'bg-sage-600',
-  adavis:     'bg-flame-500',
+  adavis:     'bg-amber-600',
   mrodriguez: 'bg-amber-500',
 }
 
@@ -100,7 +101,7 @@ function PreviewModal({ doc, onClose }) {
   if (!doc) return null
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-stone-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[90vh]">
 
         {/* Header */}
@@ -186,7 +187,7 @@ function SendModal({ doc, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-stone-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]">
 
         {/* Header */}
@@ -198,6 +199,7 @@ function SendModal({ doc, onClose }) {
           <button
             onClick={onClose}
             disabled={loading}
+            aria-label="Close dialog"
             className="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors disabled:opacity-40"
           >
             <X className="h-4 w-4" />
@@ -294,7 +296,7 @@ function StatCard({ label, value, icon: Icon, bg, color, sub, active, onClick })
       onClick={onClick}
       className={[
         'bg-white rounded-xl border border-stone-200 shadow-card px-5 py-4 hover:shadow-elevated transition-all text-left w-full',
-        active ? 'ring-2 ring-flame-500' : '',
+        active ? 'ring-2 ring-ink-500' : '',
       ].join(' ')}
     >
       <div className="flex items-start justify-between mb-3">
@@ -379,7 +381,7 @@ function DocumentRow({ doc, i, isChecked, onToggleCheck, onPreview, onSend, onNa
           {showNew && (
             <span
               style={{ opacity: newOpacity, transition: 'opacity 0.6s ease' }}
-              className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black bg-flame-500 text-white uppercase tracking-widest"
+              className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black bg-crimson-500 text-white uppercase tracking-widest"
             >
               NEW
             </span>
@@ -623,11 +625,11 @@ export default function DocumentsPage() {
       {/* Active KPI filter chip */}
       {kpiFilter !== 'all' && (
         <div className="flex items-center gap-2 mb-4">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-flame-50 border border-flame-200 text-flame-800 text-xs font-semibold rounded-full">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-ink-50 border border-ink-200 text-ink-800 text-xs font-semibold rounded-full">
             Filtered: {kpiFilter === 'ready' ? 'Ready docs' : 'Pending docs'}
             <button
               onClick={() => setKpiFilter('all')}
-              className="ml-1 text-flame-600 hover:text-flame-800"
+              className="ml-1 text-ink-600 hover:text-ink-800"
               aria-label="Clear KPI filter"
             >
               <X className="h-3 w-3" />
@@ -774,21 +776,13 @@ export default function DocumentsPage() {
       {selectedIds.size > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-ink-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-ink-700">
           <span className="text-sm font-semibold">
-            <span className="font-mono text-flame-400">{selectedIds.size}</span>
+            <span className="font-mono text-ink-400">{selectedIds.size}</span>
             {' '}document{selectedIds.size !== 1 ? 's' : ''} selected
           </span>
           <div className="w-px h-4 bg-ink-600" />
-          <button
-            onClick={handleBulkDownload}
-            disabled={bulkLoading}
-            className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold bg-flame-500 hover:bg-flame-600 text-white rounded-lg disabled:opacity-60 transition-colors"
-          >
-            {bulkLoading
-              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              : <Download className="h-3.5 w-3.5" />
-            }
+          <Button variant="cta" size="xs" icon={Download} loading={bulkLoading} onClick={handleBulkDownload}>
             {bulkLoading ? 'Downloading…' : 'Download Selected'}
-          </button>
+          </Button>
           <button
             onClick={clearSelection}
             disabled={bulkLoading}

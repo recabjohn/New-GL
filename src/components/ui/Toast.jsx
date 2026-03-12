@@ -30,7 +30,7 @@ function ToastItem({ toast, onRemove }) {
         {toast.title && <p className="text-sm font-semibold text-stone-800">{toast.title}</p>}
         {toast.message && <p className="text-sm text-stone-600 mt-0.5">{toast.message}</p>}
       </div>
-      <button onClick={() => onRemove(toast.id)} className="shrink-0 p-0.5 rounded text-stone-400 hover:text-stone-600 transition-colors">
+      <button onClick={() => onRemove(toast.id)} aria-label="Dismiss notification" className="shrink-0 p-0.5 rounded text-stone-400 hover:text-stone-600 transition-colors">
         <X className="h-4 w-4" />
       </button>
     </div>

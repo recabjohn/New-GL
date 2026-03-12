@@ -51,7 +51,7 @@ export default function AccountInfoCard({ data, onChange }) {
 
         {/* Business identity */}
         <div>
-          <SectionRule color="bg-flame-400">Business Identity</SectionRule>
+          <SectionRule color="bg-ink-400">Business Identity</SectionRule>
           <div className="grid grid-cols-3 gap-4">
             <div className="col-span-2">
               <Input

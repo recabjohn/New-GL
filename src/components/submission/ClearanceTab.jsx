@@ -34,7 +34,7 @@ function WorkflowTimeline({ result }) {
           <div className="flex flex-col items-center">
             <div className={[
               'w-6 h-6 rounded-full flex items-center justify-center shrink-0',
-              s.done ? 'bg-sage-500' : s.active ? 'bg-flame-400 animate-pulse' : 'bg-stone-100 border border-stone-200',
+              s.done ? 'bg-sage-500' : s.active ? 'bg-ink-400 animate-pulse' : 'bg-stone-100 border border-stone-200',
             ].join(' ')}>
               {s.done
                 ? <CheckCircle2 className="h-3.5 w-3.5 text-white" />
@@ -47,7 +47,7 @@ function WorkflowTimeline({ result }) {
               <div className={`w-px h-7 mt-0.5 mb-0.5 ${s.done ? 'bg-sage-300' : 'bg-stone-200'}`} />
             )}
           </div>
-          <p className={`text-xs font-medium pt-1 ${s.done ? 'text-sage-700' : s.active ? 'text-flame-600' : 'text-stone-400'}`}>
+          <p className={`text-xs font-medium pt-1 ${s.done ? 'text-sage-700' : s.active ? 'text-ink-600' : 'text-stone-400'}`}>
             {s.label}
           </p>
         </div>
@@ -324,12 +324,29 @@ export default function ClearanceTab({ submission, onNext }) {
     setChecking(false)
     setResult('cleared')
     toast.success('Clearance passed', 'No conflicting submissions found for this insured.')
+    // Auto-advance to Account tab after a brief moment
+    setTimeout(() => onNext?.(), 1500)
   }
 
   return (
     <div className="space-y-6">
-      {/* Risk Assessment Score — new panel above the main form grid */}
-      <RiskAssessmentPanel />
+      {/* ── Phase 1: Review Risk Profile (read-only) ──────────────────────── */}
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-ink-100 text-ink-700 text-xs font-bold shrink-0">1</span>
+          <h3 className="text-sm font-bold text-stone-800 uppercase tracking-wide">Review Risk Profile</h3>
+          <div className="flex-1 h-px bg-stone-100" />
+        </div>
+        <RiskAssessmentPanel />
+      </div>
+
+      {/* ── Phase 2: Complete Required Fields (editable) ──────────────────── */}
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-ink-100 text-ink-700 text-xs font-bold shrink-0">2</span>
+          <h3 className="text-sm font-bold text-stone-800 uppercase tracking-wide">Complete Required Fields</h3>
+          <div className="flex-1 h-px bg-stone-100" />
+        </div>
 
       {/* Main clearance form grid */}
       <div className="grid grid-cols-3 gap-6">
@@ -359,6 +376,50 @@ export default function ClearanceTab({ submission, onNext }) {
             </div>
           </Card>
 
+          {/* Prior Policy Lookup */}
+          <PriorPolicyLookup />
+        </div>
+
+        {/* Right: status + timeline + info (1/3 width) */}
+        <div className="space-y-4">
+          {/* Submission info stat grid */}
+          <div className="rounded-xl border border-stone-200 bg-white overflow-hidden">
+            <div className="px-4 py-3 border-b border-stone-100">
+              <span className="text-xs font-bold text-stone-500 uppercase tracking-widest">Submission Info</span>
+            </div>
+            <div className="p-4 grid grid-cols-2 gap-x-4 gap-y-3">
+              {[
+                ['Sub #',      submission?.submissionNumber],
+                ['Assignee',   submission?.assignee],
+                ['Created',    submission?.createdDate],
+                ['Need By',    submission?.needByDate],
+                ['LOB',        'General Liability'],
+                ['Priority',   submission?.priority],
+              ].map(([k, v]) => (
+                <div key={k}>
+                  <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{k}</p>
+                  <p className="text-xs font-semibold text-stone-800 mt-0.5 truncate">{v || '—'}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Flag for Manual Review */}
+          <FlagForReviewPanel />
+        </div>
+      </div>
+      </div>
+
+      {/* ── Phase 3: Run Clearance (action) ───────────────────────────────── */}
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-ink-100 text-ink-700 text-xs font-bold shrink-0">3</span>
+          <h3 className="text-sm font-bold text-stone-800 uppercase tracking-wide">Run Clearance</h3>
+          <div className="flex-1 h-px bg-stone-100" />
+        </div>
+
+        <div className="grid grid-cols-3 gap-6">
+          <div className="col-span-2 space-y-5">
           <Button
             variant="cta" size="lg" icon={Search}
             loading={checking} onClick={handleCheck}
@@ -375,9 +436,9 @@ export default function ClearanceTab({ submission, onNext }) {
               <div>
                 <p className="text-base font-semibold text-sage-700">Clearance Passed</p>
                 <p className="text-sm text-sage-600 mt-0.5">No conflicting policies found for this insured and agency combination.</p>
-                <button onClick={onNext} className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-sage-700 hover:underline">
-                  Proceed to Account <ArrowRight className="h-3 w-3" />
-                </button>
+                <Button variant="cta" size="sm" icon={ArrowRight} onClick={onNext} className="mt-2">
+                  Proceed to Account
+                </Button>
               </div>
             </div>
           )}
@@ -393,14 +454,10 @@ export default function ClearanceTab({ submission, onNext }) {
               </div>
             </div>
           )}
+          </div>
 
-          {/* Prior Policy Lookup — new panel */}
-          <PriorPolicyLookup />
-        </div>
-
-        {/* Right: status + timeline + info (1/3 width) */}
-        <div className="space-y-4">
-          {/* Clearance status panel */}
+          {/* Right: clearance status panel */}
+          <div>
           <div className="rounded-xl border border-stone-200 bg-white overflow-hidden">
             <div className="px-4 py-3 border-b border-stone-100 flex items-center justify-between">
               <span className="text-xs font-bold text-stone-500 uppercase tracking-widest">Clearance Status</span>
@@ -428,35 +485,11 @@ export default function ClearanceTab({ submission, onNext }) {
               {result && <WorkflowTimeline result={result} />}
             </div>
           </div>
-
-          {/* Submission info stat grid */}
-          <div className="rounded-xl border border-stone-200 bg-white overflow-hidden">
-            <div className="px-4 py-3 border-b border-stone-100">
-              <span className="text-xs font-bold text-stone-500 uppercase tracking-widest">Submission Info</span>
-            </div>
-            <div className="p-4 grid grid-cols-2 gap-x-4 gap-y-3">
-              {[
-                ['Sub #',      submission?.submissionNumber],
-                ['Assignee',   submission?.assignee],
-                ['Created',    submission?.createdDate],
-                ['Need By',    submission?.needByDate],
-                ['LOB',        'General Liability'],
-                ['Priority',   submission?.priority],
-              ].map(([k, v]) => (
-                <div key={k}>
-                  <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{k}</p>
-                  <p className="text-xs font-semibold text-stone-800 mt-0.5 truncate">{v || '—'}</p>
-                </div>
-              ))}
-            </div>
           </div>
-
-          {/* Flag for Manual Review — new panel */}
-          <FlagForReviewPanel />
         </div>
       </div>
 
-      {/* Market Intelligence — new panel at bottom */}
+      {/* Market Intelligence — bottom section */}
       <MarketIntelligencePanel />
     </div>
   )

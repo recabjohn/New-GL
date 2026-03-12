@@ -11,7 +11,7 @@ import Modal from '../components/ui/Modal'
 import Select from '../components/ui/Select'
 import SubmissionFilters from '../components/dashboard/SubmissionFilters'
 import NewSubmissionModal from '../components/dashboard/NewSubmissionModal'
-import { submissions, assignees } from '../data/mockData'
+import { submissions, assignees, STAGE_COLORS } from '../data/mockData'
 import { useToast } from '../components/ui/Toast'
 import { useSimulatedLoading } from '../hooks/useFormGuard'
 import { SkeletonTable } from '../components/ui/Skeleton'
@@ -20,12 +20,12 @@ import { SkeletonTable } from '../components/ui/Skeleton'
 // Constants
 // ---------------------------------------------------------------------------
 const PIPELINE = [
-  { id: 'In Progress', label: 'New',       count: 7,  color: '#2A5BAD' },
-  { id: 'Clearance',   label: 'Clearance', count: 4,  color: '#D97706' },
-  { id: 'Registered',  label: 'Rating',    count: 4,  color: '#4879C2' },
-  { id: 'Offered',     label: 'Quoted',    count: 5,  color: '#1AAD61' },
-  { id: 'Bound',       label: 'Bound',     count: 2,  color: '#F05A2A' },
-  { id: 'Issued',      label: 'Issued',    count: 1,  color: '#0E713E' },
+  { id: 'In Progress', label: 'New',       count: 7,  color: STAGE_COLORS['In Progress'] },
+  { id: 'Clearance',   label: 'Clearance', count: 4,  color: STAGE_COLORS['Clearance']   },
+  { id: 'Registered',  label: 'Rating',    count: 4,  color: STAGE_COLORS['Registered']  },
+  { id: 'Offered',     label: 'Quoted',    count: 5,  color: STAGE_COLORS['Offered']     },
+  { id: 'Bound',       label: 'Bound',     count: 2,  color: STAGE_COLORS['Bound']       },
+  { id: 'Issued',      label: 'Issued',    count: 1,  color: STAGE_COLORS['Issued']      },
 ]
 
 const PRIORITIES = ['HIGH', 'MEDIUM', 'LOW']
@@ -833,7 +833,7 @@ export default function SubmissionsPage() {
                 </div>
                 <div
                   className="mt-1.5 w-1.5 h-1.5 rounded-full transition-colors"
-                  style={{ backgroundColor: active ? stage.color : '#E7E5E4' }}
+                  style={{ backgroundColor: active ? stage.color : '#E7E5E4' /* stone-100 */ }}
                 />
               </button>
             )
@@ -887,7 +887,7 @@ export default function SubmissionsPage() {
                 className={[
                   'inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-all',
                   isActive
-                    ? 'bg-flame-50 text-flame-700 border-flame-500 ring-1 ring-flame-400'
+                    ? 'bg-ink-50 text-ink-700 border-ink-500 ring-1 ring-ink-400'
                     : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400 hover:text-stone-700',
                 ].join(' ')}
               >
@@ -1019,7 +1019,7 @@ export default function SubmissionsPage() {
         <div className="space-y-3">
           <div>
             <label className="form-label">
-              Filter Name <span className="text-flame-500">*</span>
+              Filter Name <span className="text-crimson-500">*</span>
             </label>
             <input
               type="text"

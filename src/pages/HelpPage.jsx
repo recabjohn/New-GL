@@ -37,7 +37,7 @@ function HeroSection() {
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="Search for anything..."
-          className="w-full bg-white rounded-xl shadow-lg pl-12 pr-5 py-3.5 text-sm text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-flame-400"
+          className="w-full bg-white rounded-xl shadow-lg pl-12 pr-5 py-3.5 text-sm text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-ink-400"
         />
       </div>
 
@@ -63,8 +63,8 @@ function HeroSection() {
 const QUICK_STARTS = [
   {
     icon: BookOpen,
-    iconColor: 'text-flame-500',
-    iconBg: 'bg-flame-50',
+    iconColor: 'text-ink-500',
+    iconBg: 'bg-ink-50',
     title: 'Getting Started',
     description: 'Learn the fundamentals of the Solaris GL platform and get your first submission live in minutes.',
     steps: [
@@ -405,8 +405,8 @@ function VideoTutorials() {
 // ─── Release Notes ────────────────────────────────────────────────────────────
 
 const RELEASE_NOTES = [
-  { version: 'v2.4.1', description: 'New combined ratio trend chart in Analytics',    badge: 'New',      badgeColor: 'bg-flame-100 text-flame-700'  },
-  { version: 'v2.4.0', description: 'Quote versioning with Clone Quote support',       badge: 'New',      badgeColor: 'bg-flame-100 text-flame-700'  },
+  { version: 'v2.4.1', description: 'New combined ratio trend chart in Analytics',    badge: 'New',      badgeColor: 'bg-ink-100 text-ink-700'  },
+  { version: 'v2.4.0', description: 'Quote versioning with Clone Quote support',       badge: 'New',      badgeColor: 'bg-ink-100 text-ink-700'  },
   { version: 'v2.3.2', description: 'Improved PDF export performance',                 badge: 'Improved', badgeColor: 'bg-sage-100 text-sage-700'    },
   { version: 'v2.3.1', description: 'Fixed clearance date calculation bug',            badge: 'Fix',      badgeColor: 'bg-stone-100 text-stone-600'  },
 ]
@@ -475,7 +475,7 @@ function ChatModal({ open, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40" onClick={handleClose} />
+      <div className="absolute inset-0 bg-stone-900/50 backdrop-blur-sm" onClick={handleClose} />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
         {/* Header */}
         <div className="px-6 pt-6 pb-5 border-b border-stone-100 flex items-start gap-4">
@@ -489,6 +489,7 @@ function ChatModal({ open, onClose }) {
           <button
             type="button"
             onClick={handleClose}
+            aria-label="Close chat"
             className="text-stone-400 hover:text-stone-600 transition-colors ml-2"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -517,7 +518,7 @@ function ChatModal({ open, onClose }) {
           {/* Message */}
           <div>
             <label className="form-label">
-              Message <span className="text-flame-500">*</span>
+              Message <span className="text-crimson-500">*</span>
             </label>
             <textarea
               value={message}
@@ -603,8 +604,8 @@ function SupportCard() {
 
             {/* Live Chat */}
             <div className="flex items-center gap-3 bg-white rounded-lg border border-stone-200 px-4 py-3 shadow-sm">
-              <div className="h-8 w-8 rounded-full bg-flame-100 flex items-center justify-center">
-                <MessageSquare className="h-4 w-4 text-flame-600" />
+              <div className="h-8 w-8 rounded-full bg-ink-100 flex items-center justify-center">
+                <MessageSquare className="h-4 w-4 text-ink-600" />
               </div>
               <div>
                 <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Live Chat</p>

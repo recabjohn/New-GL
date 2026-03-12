@@ -55,7 +55,7 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:w-[48%] relative bg-ink-950 flex-col justify-between p-10 overflow-hidden">
         {/* Decorative gradient orbs */}
         <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-ink-800/30 blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-72 h-72 rounded-full bg-flame-500/10 blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-72 h-72 rounded-full bg-ink-500/10 blur-3xl" />
         <div className="absolute top-1/2 left-1/3 w-48 h-48 rounded-full bg-ink-700/20 blur-2xl" />
 
         {/* Logo */}
@@ -161,6 +161,7 @@ export default function LoginPage() {
                     type="button"
                     tabIndex={-1}
                     onClick={() => setShowPassword(v => !v)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -176,7 +177,7 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={e => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded border-stone-300 text-flame-500 focus:ring-flame-400 focus:ring-offset-0 transition-colors cursor-pointer"
+                  className="w-4 h-4 rounded border-stone-300 text-ink-600 focus:ring-ink-400 focus:ring-offset-0 transition-colors cursor-pointer"
                 />
                 <span className="text-xs font-medium text-stone-500 group-hover:text-stone-700 transition-colors">
                   Remember me

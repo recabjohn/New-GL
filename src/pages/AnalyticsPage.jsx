@@ -119,7 +119,7 @@ const PIPELINE_STAGES = [
   { label: 'Clearance',   count: 4, colorBar: 'bg-amber-400', colorBadge: 'bg-amber-50 text-amber-700 border-amber-100' },
   { label: 'Rating',      count: 4, colorBar: 'bg-ink-300',   colorBadge: 'bg-stone-50 text-stone-600 border-stone-200' },
   { label: 'Quoted',      count: 5, colorBar: 'bg-sage-500',  colorBadge: 'bg-sage-50 text-sage-700 border-sage-100'    },
-  { label: 'Bound',       count: 2, colorBar: 'bg-flame-500', colorBadge: 'bg-flame-50 text-flame-700 border-flame-100' },
+  { label: 'Bound',       count: 2, colorBar: 'bg-sage-500', colorBadge: 'bg-sage-50 text-sage-700 border-sage-100' },
   { label: 'Issued',      count: 1, colorBar: 'bg-sage-700',  colorBadge: 'bg-sage-50 text-sage-800 border-sage-200'    },
 ]
 const PIPELINE_TOTAL = PIPELINE_STAGES.reduce((s, p) => s + p.count, 0)
@@ -162,7 +162,7 @@ const UW_AVATAR_COLORS = {
   'uiuxAdmin':    'bg-ink-700',
   'J. Smith':     'bg-sage-600',
   'A. Davis':     'bg-amber-500',
-  'M. Rodriguez': 'bg-flame-500',
+  'M. Rodriguez': 'bg-ink-500',
 }
 
 // ── Renewal pipeline data ─────────────────────────────────────────────────────
@@ -220,7 +220,7 @@ const COMBINED_RATIO_DATA = [
 function StatusChip({ status }) {
   const map = {
     Offered: 'bg-sage-50 text-sage-700 border border-sage-100',
-    Bound:   'bg-flame-50 text-flame-700 border border-flame-100',
+    Bound:   'bg-sage-50 text-sage-700 border border-sage-100',
     Issued:  'bg-ink-50 text-ink-700 border border-ink-100',
   }
   return (
@@ -312,6 +312,7 @@ function EmailReportModal({ open, onClose, toast }) {
           </div>
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors"
           >
             <X className="h-4 w-4" />
@@ -490,8 +491,8 @@ export default function AnalyticsPage() {
 
         <div className="bg-white rounded-xl border border-stone-200 shadow-card px-5 py-4 hover:shadow-elevated transition-shadow">
           <div className="flex items-start justify-between mb-3">
-            <div className="bg-flame-50 p-2 rounded-lg">
-              <Target className="h-4 w-4 text-flame-600" />
+            <div className="bg-ink-50 p-2 rounded-lg">
+              <Target className="h-4 w-4 text-ink-600" />
             </div>
             <TrendBadge up={data.bindRateTrendUp} label={data.bindRateTrend} />
           </div>
@@ -571,16 +572,16 @@ export default function AnalyticsPage() {
                     {/* Bar */}
                     <div className="flex-1 flex items-end w-full">
                       <div
-                        className={`w-full rounded-t-md transition-all ${current ? 'bg-flame-500' : 'bg-ink-200'}`}
+                        className={`w-full rounded-t-md transition-all ${current ? 'bg-ink-500' : 'bg-ink-200'}`}
                         style={{ height: `${barH}px` }}
                       />
                     </div>
                     {/* Month label */}
-                    <span className={`text-[11px] font-semibold ${current ? 'text-flame-600' : 'text-stone-400'}`}>
+                    <span className={`text-[11px] font-semibold ${current ? 'text-ink-600' : 'text-stone-400'}`}>
                       {month}
                     </span>
                     {current && (
-                      <span className="text-[9px] font-bold bg-flame-100 text-flame-600 px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+                      <span className="text-[9px] font-bold bg-ink-100 text-ink-600 px-1.5 py-0.5 rounded-full uppercase tracking-wide">
                         Current
                       </span>
                     )}
@@ -592,7 +593,7 @@ export default function AnalyticsPage() {
             {/* Legend */}
             <div className="flex items-center gap-4 mt-4 pt-3 border-t border-stone-100 flex-wrap">
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-sm bg-flame-500" />
+                <div className="w-3 h-3 rounded-sm bg-ink-500" />
                 <span className="text-[11px] text-stone-500">Current month</span>
               </div>
               <div className="flex items-center gap-1.5">
@@ -742,7 +743,7 @@ export default function AnalyticsPage() {
                   {/* 65% dashed threshold — label only on first row to avoid repetition */}
                   <div
                     className="absolute top-0 bottom-0 z-10"
-                    style={{ left: '65%', borderLeft: '1.5px dashed #a8a29e' }}
+                    style={{ left: '65%', borderLeft: '1.5px dashed #a8a29e' /* stone-300 */ }}
                   >
                     {idx === 0 && (
                       <span
@@ -775,7 +776,7 @@ export default function AnalyticsPage() {
             <span className="text-[11px] text-stone-500">Review Needed (&ge; 65%)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="h-3 shrink-0" style={{ borderLeft: '1.5px dashed #a8a29e', width: '1px' }} />
+            <div className="h-3 shrink-0" style={{ borderLeft: '1.5px dashed #a8a29e' /* stone-300 */, width: '1px' }} />
             <span className="text-[11px] text-stone-500">65% Threshold</span>
           </div>
         </div>
@@ -1053,7 +1054,7 @@ export default function AnalyticsPage() {
                   {/* 65% dashed threshold line */}
                   <div
                     className="absolute top-0 bottom-0 z-10"
-                    style={{ left: '65%', borderLeft: '1.5px dashed #a8a29e' }}
+                    style={{ left: '65%', borderLeft: '1.5px dashed #a8a29e' /* stone-300 */ }}
                   >
                     {/* "65% Target" label — first row only */}
                     {idx === 0 && (
@@ -1087,7 +1088,7 @@ export default function AnalyticsPage() {
             <span className="text-[11px] text-stone-500">Review Needed (&ge; 65%)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="h-3 shrink-0" style={{ borderLeft: '1.5px dashed #a8a29e', width: '1px' }} />
+            <div className="h-3 shrink-0" style={{ borderLeft: '1.5px dashed #a8a29e' /* stone-300 */, width: '1px' }} />
             <span className="text-[11px] text-stone-500">65% Threshold</span>
           </div>
         </div>
@@ -1115,7 +1116,7 @@ export default function AnalyticsPage() {
               className="absolute left-0 right-0 z-10 pointer-events-none"
               style={{
                 bottom: `${(100 / 150) * 100}%`,
-                borderTop: '1.5px dashed #a8a29e',
+                borderTop: '1.5px dashed #a8a29e' /* stone-300 */,
               }}
             >
               <span
@@ -1168,7 +1169,7 @@ export default function AnalyticsPage() {
                           style={{
                             borderLeft: '6px solid transparent',
                             borderRight: '6px solid transparent',
-                            borderTop: '6px solid #1c1917',
+                            borderTop: '6px solid #1c1917', /* stone-800 */
                           }}
                         />
                       </div>
@@ -1217,7 +1218,7 @@ export default function AnalyticsPage() {
             <span className="text-[11px] text-stone-500">Expense Ratio (28%)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="h-3 shrink-0" style={{ borderLeft: '1.5px dashed #a8a29e', width: '1px' }} />
+            <div className="h-3 shrink-0" style={{ borderLeft: '1.5px dashed #a8a29e' /* stone-300 */, width: '1px' }} />
             <span className="text-[11px] text-stone-500">100% Breakeven Line</span>
           </div>
           <div className="flex items-center gap-1.5">

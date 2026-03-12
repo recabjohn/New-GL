@@ -80,7 +80,7 @@ export default function Step1_SubmissionInfo({ data, onChange }) {
 
           {/* Account + Agency */}
           <Card>
-            <SectionRule color="bg-flame-400">Account &amp; Agency</SectionRule>
+            <SectionRule color="bg-ink-400">Account &amp; Agency</SectionRule>
             <div className="space-y-4">
               {/* LOB Type — read-only */}
               <div>

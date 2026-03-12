@@ -63,8 +63,8 @@ function RateIndicationTab({ submission }) {
         {/* Total premium card */}
         <Card>
           <div className="flex flex-col items-center justify-center h-full py-4 text-center">
-            <div className="w-12 h-12 rounded-full bg-flame-50 flex items-center justify-center mb-3">
-              <TrendingUp className="h-6 w-6 text-flame-500" />
+            <div className="w-12 h-12 rounded-full bg-ink-50 flex items-center justify-center mb-3">
+              <TrendingUp className="h-6 w-6 text-ink-500" />
             </div>
             <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Total Premium</p>
             <p className="text-4xl font-black font-mono text-ink-800">${ws.totalPremium.toFixed(2)}</p>
@@ -291,7 +291,7 @@ export default function ProductBrowsePage() {
           <div className="flex items-end justify-between gap-4 flex-wrap">
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <BarChart2 className="h-4 w-4 text-flame-500" />
+                <BarChart2 className="h-4 w-4 text-ink-500" />
                 <span className="text-xs font-bold text-stone-500 uppercase tracking-widest">Product Browse</span>
               </div>
               <h1 className="text-xl font-bold text-stone-900">{submission.insuredName}</h1>
@@ -302,7 +302,7 @@ export default function ProductBrowsePage() {
             </div>
             <div className="text-right">
               <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Indicated Premium</p>
-              <p className="text-3xl font-black font-mono text-flame-600">${ws.totalPremium.toFixed(2)}</p>
+              <p className="text-3xl font-black font-mono text-ink-600">${ws.totalPremium.toFixed(2)}</p>
             </div>
           </div>
         </div>

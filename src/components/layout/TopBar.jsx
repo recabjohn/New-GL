@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Bell, Search, ChevronRight, Settings2, X, User, HelpCircle, LogOut, Moon } from 'lucide-react'
+import { Bell, Search, ChevronRight, X, User, HelpCircle, LogOut, Moon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { submissions } from '../../data/mockData'
 import { useToast } from '../ui/Toast'
+import { useAuth } from '../../context/AuthContext'
 
 // ---------------------------------------------------------------------------
 // Breadcrumb config
@@ -89,7 +90,7 @@ function NotificationsPanel({ notifications, onMarkAllRead, onClose, onNavigate 
             onClick={() => { onNavigate(n.sn); onClose() }}
             className={[
               'w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-stone-50 transition-colors border-b border-stone-50',
-              !n.read ? 'bg-flame-50' : 'bg-white',
+              !n.read ? 'bg-ink-50' : 'bg-white',
             ].join(' ')}
           >
             {/* Level dot */}
@@ -178,8 +179,8 @@ function SearchPalette({ onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/50 flex items-start justify-center pt-[20vh]">
-      <div className="w-full max-w-xl mx-4 bg-white rounded-2xl shadow-modal overflow-hidden">
+    <div className="fixed inset-0 z-[100] bg-stone-900/50 backdrop-blur-sm flex items-start justify-center pt-[20vh]">
+        <div className="w-full max-w-xl mx-4 bg-white rounded-xl shadow-modal overflow-hidden">
         {/* Search input row */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-stone-100">
           <Search className="h-4 w-4 text-stone-400 shrink-0" />
@@ -193,7 +194,7 @@ function SearchPalette({ onClose }) {
             className="flex-1 text-sm text-stone-800 placeholder-stone-400 focus:outline-none bg-transparent"
           />
           {query && (
-            <button onClick={() => setQuery('')} className="text-stone-400 hover:text-stone-600 transition-colors">
+            <button onClick={() => setQuery('')} aria-label="Clear search" className="text-stone-400 hover:text-stone-600 transition-colors">
               <X className="h-4 w-4" />
             </button>
           )}
@@ -276,6 +277,7 @@ function SearchPalette({ onClose }) {
 function UserProfileDropdown({ onClose }) {
   const navigate = useNavigate()
   const toast = useToast()
+  const { logout } = useAuth()
   const ref = useRef(null)
 
   useEffect(() => {
@@ -333,7 +335,7 @@ function UserProfileDropdown({ onClose }) {
       <div className="h-px bg-stone-100 mx-2 my-1" />
 
       <button
-        onClick={() => { toast.info('Signing out...', 'You will be redirected shortly.'); onClose() }}
+        onClick={() => { logout(); navigate('/login', { replace: true }); onClose() }}
         className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-crimson-600 hover:bg-crimson-50 transition-colors text-left"
       >
         <LogOut className="h-3.5 w-3.5 shrink-0" />
@@ -425,16 +427,11 @@ export default function TopBar() {
 
         {/* Right section */}
         <div className="ml-auto flex items-center gap-1">
-          {/* Operational status chip */}
-          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 bg-sage-50 border border-sage-200 rounded-full mr-2">
-            <span className="w-1.5 h-1.5 bg-sage-500 rounded-full" />
-            <span className="text-[10px] font-semibold text-sage-700 uppercase tracking-wider">Operational</span>
-          </div>
-
           {/* Notifications bell */}
           <div ref={notifRef} className="relative">
             <button
               onClick={() => { setShowNotifications((v) => !v); setShowUserMenu(false) }}
+              aria-label="Notifications"
               className="relative p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
             >
               <Bell className="h-4 w-4" />
@@ -452,11 +449,6 @@ export default function TopBar() {
               />
             )}
           </div>
-
-          {/* Settings2 icon (cosmetic) */}
-          <button className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors">
-            <Settings2 className="h-4 w-4" />
-          </button>
 
           <div className="h-5 w-px bg-stone-200 mx-1" />
 

@@ -10,7 +10,7 @@ const EMPTY_FORM = { firstName: '', lastName: '', email: '', phone: '', title: '
 
 function ContactAvatar({ firstName, lastName }) {
   const initials = `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase()
-  const palette  = ['bg-ink-700', 'bg-flame-500', 'bg-sage-500', 'bg-amber-500']
+  const palette  = ['bg-ink-700', 'bg-ink-500', 'bg-sage-500', 'bg-amber-500']
   const bg       = palette[(firstName?.charCodeAt(0) || 0) % palette.length]
   return (
     <div className={`w-7 h-7 rounded-full ${bg} text-white text-[10px] font-bold flex items-center justify-center shrink-0`}>

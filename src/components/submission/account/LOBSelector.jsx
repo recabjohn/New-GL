@@ -7,7 +7,7 @@ const lobs = [
   { id: 'CP',       label: 'Commercial Property', desc: 'Buildings & contents',   icon: Building2,   color: 'text-sage-600',    bg: 'bg-sage-50' },
   { id: 'Cyber',    label: 'Cyber',               desc: 'Data breach, ransomware',icon: Globe,       color: 'text-crimson-600', bg: 'bg-crimson-50' },
   { id: 'Umbrella', label: 'Umbrella',            desc: 'Excess liability',        icon: Umbrella,    color: 'text-ink-500',     bg: 'bg-stone-100' },
-  { id: 'EPLI',     label: 'EPLI',                desc: 'Employment practices',   icon: Users,       color: 'text-flame-600',   bg: 'bg-flame-50' },
+  { id: 'EPLI',     label: 'EPLI',                desc: 'Employment practices',   icon: Users,       color: 'text-amber-500',   bg: 'bg-amber-50' },
   { id: 'BOP',      label: 'BOP',                 desc: 'Business owner pkg',     icon: Package,     color: 'text-stone-600',   bg: 'bg-stone-100' },
   { id: 'Excess',   label: 'Excess',              desc: 'Excess over primary',    icon: Layers,      color: 'text-ink-500',     bg: 'bg-ink-50' },
 ]
@@ -57,7 +57,7 @@ export default function LOBSelector({ selected = [], onChange }) {
                     <p className={`text-xs font-semibold leading-tight ${active ? 'text-white' : 'text-stone-800'}`}>{lob.label}</p>
                     <p className={`text-[10px] leading-tight truncate ${active ? 'text-ink-200' : 'text-stone-400'}`}>{lob.desc}</p>
                   </div>
-                  <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${active ? 'bg-flame-400 border-flame-400' : 'border-stone-300'}`}>
+                  <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${active ? 'bg-white border-white' : 'border-stone-300'}`}>
                     {active && (
                       <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -71,9 +71,9 @@ export default function LOBSelector({ selected = [], onChange }) {
         </div>
 
         {selected.includes('GL') && (
-          <div className="rounded-xl bg-flame-50 border border-flame-200 px-4 py-3">
-            <p className="text-xs font-bold text-flame-700 mb-0.5">General Liability selected</p>
-            <p className="text-xs text-flame-600">Product: <strong>Solartis ISO — GL V1</strong></p>
+          <div className="rounded-xl bg-ink-50 border border-ink-200 px-4 py-3">
+            <p className="text-xs font-bold text-ink-700 mb-0.5">General Liability selected</p>
+            <p className="text-xs text-ink-600">Product: <strong>Solartis ISO — GL V1</strong></p>
           </div>
         )}
       </div>

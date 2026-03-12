@@ -41,15 +41,17 @@ function Toggle({ label, checked, onChange }) {
       <span className="text-xs font-medium text-stone-700">{label}</span>
       <button
         type="button"
+        role="switch"
+        aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={[
-          'relative w-9 h-5 rounded-full transition-colors duration-200 shrink-0',
-          checked ? 'bg-ink-700' : 'bg-stone-200',
+          'relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-ink-400 focus:ring-offset-1',
+          checked ? 'bg-ink-700' : 'bg-stone-300',
         ].join(' ')}
       >
         <span className={[
-          'absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200',
-          checked ? 'translate-x-4' : 'translate-x-0.5',
+          'pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transition-transform duration-200',
+          checked ? 'translate-x-5' : 'translate-x-0',
         ].join(' ')} />
       </button>
     </div>
@@ -65,7 +67,7 @@ export default function SubmissionInfoCard({ data, onChange }) {
 
         {/* Billing */}
         <div>
-          <SectionRule color="bg-flame-400">Billing</SectionRule>
+          <SectionRule color="bg-ink-400">Billing</SectionRule>
           <div className="grid grid-cols-2 gap-4 mb-3">
             <BillingToggle value={data.billingMethod} onChange={v => set('billingMethod', v)} />
             <Input

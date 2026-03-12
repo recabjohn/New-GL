@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
+import Modal from '../components/ui/Modal'
 import { StatusBadge } from '../components/ui/Badge'
 import { quote, ratingWorksheet, scheduleForms } from '../data/mockData'
 import { useToast } from '../components/ui/Toast'
@@ -240,7 +241,7 @@ function BindModal({ open, onClose, onConfirm }) {
 
           {/* Payment Plan */}
           <div>
-            <label className="form-label mb-1">Payment Plan <span className="text-flame-500">*</span></label>
+            <label className="form-label mb-1">Payment Plan <span className="text-crimson-500">*</span></label>
             <select
               value={paymentPlan}
               onChange={e => setPaymentPlan(e.target.value)}
@@ -263,7 +264,7 @@ function BindModal({ open, onClose, onConfirm }) {
             />
             <div>
               <p className="text-sm font-medium text-stone-800 group-hover:text-stone-900">
-                Surplus Lines Acknowledgment <span className="text-flame-500">*</span>
+                Surplus Lines Acknowledgment <span className="text-crimson-500">*</span>
               </p>
               <p className="text-xs text-stone-500 mt-0.5 leading-relaxed">
                 I acknowledge this policy is written on a surplus lines basis and may not carry the same statutory protections as an admitted policy.
@@ -284,7 +285,7 @@ function BindModal({ open, onClose, onConfirm }) {
             />
             <div>
               <p className={`text-sm font-semibold ${uwCert ? 'text-ink-800' : 'text-stone-700'}`}>
-                Underwriter Certification <span className="text-flame-500">*</span>
+                Underwriter Certification <span className="text-crimson-500">*</span>
               </p>
               <p className={`text-xs mt-0.5 leading-relaxed ${uwCert ? 'text-ink-600' : 'text-stone-500'}`}>
                 I certify that all underwriting requirements have been met and this risk has been properly evaluated per company guidelines.
@@ -381,7 +382,7 @@ function SummaryTab({ onBind, onIssue, bound, issued, binderDoc, policyDoc, decl
 
   const premiumItems = [
     { label: 'Base Premium',    value: q.basePremium,    color: 'bg-ink-600' },
-    { label: 'Cert. Terrorism', value: q.certTerrorism,  color: 'bg-flame-400' },
+    { label: 'Cert. Terrorism', value: q.certTerrorism,  color: 'bg-crimson-400' },
     { label: 'Taxes & Fees',    value: q.totalTaxesFees, color: 'bg-amber-400' },
     { label: 'Other Fees',      value: q.totalOtherFees, color: 'bg-stone-300' },
   ]
@@ -732,27 +733,6 @@ function SummaryTab({ onBind, onIssue, bound, issued, binderDoc, policyDoc, decl
   )
 }
 
-// ---------------------------------------------------------------------------
-// Subjectivity modals
-// ---------------------------------------------------------------------------
-function SubjModal({ open, onClose, title, children }) {
-  if (!open) return null
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
-        <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between">
-          <h3 className="text-base font-semibold text-stone-900">{title}</h3>
-          <button type="button" onClick={onClose} className="text-stone-400 hover:text-stone-600 transition-colors">
-            <XCircle className="h-5 w-5" />
-          </button>
-        </div>
-        <div className="px-6 py-5">{children}</div>
-      </div>
-    </div>
-  )
-}
-
 const INITIAL_SUBJECTIVITIES = [
   { id: 1, text: 'Signed application on file',          category: 'Pre-Bind',  status: 'Satisfied', waived: false },
   { id: 2, text: 'Loss runs verified (5 years)',        category: 'Pre-Bind',  status: 'Satisfied', waived: false },
@@ -814,7 +794,7 @@ function SubjectivityTab() {
   return (
     <div className="space-y-5">
       {/* Satisfy Modal */}
-      <SubjModal
+      <Modal size="sm"
         open={!!satisfyTarget}
         onClose={() => { setSatisfyTarget(null); setSatisfyNote('') }}
         title="Mark as Satisfied"
@@ -838,10 +818,10 @@ function SubjectivityTab() {
             <Button variant="success" size="sm" icon={CheckCircle2} onClick={handleSatisfy}>Mark Satisfied</Button>
           </div>
         </div>
-      </SubjModal>
+      </Modal>
 
       {/* Waive Modal */}
-      <SubjModal
+      <Modal size="sm"
         open={!!waiveTarget}
         onClose={() => { setWaiveTarget(null); setWaiveReason('') }}
         title="Waive Subjectivity"
@@ -851,7 +831,7 @@ function SubjectivityTab() {
             Waiving <strong className="font-semibold">"{waiveTarget?.text}"</strong>.
           </p>
           <div>
-            <label className="form-label">Reason for waiver <span className="text-flame-500">*</span></label>
+            <label className="form-label">Reason for waiver <span className="text-crimson-500">*</span></label>
             <textarea
               value={waiveReason}
               onChange={e => setWaiveReason(e.target.value)}
@@ -865,13 +845,13 @@ function SubjectivityTab() {
             <Button variant="secondary" size="sm" onClick={handleWaive}>Waive</Button>
           </div>
         </div>
-      </SubjModal>
+      </Modal>
 
       {/* Add Modal */}
-      <SubjModal open={addOpen} onClose={() => setAddOpen(false)} title="Add Subjectivity">
+      <Modal size="sm" open={addOpen} onClose={() => setAddOpen(false)} title="Add Subjectivity">
         <div className="space-y-4">
           <div>
-            <label className="form-label">Subjectivity Text <span className="text-flame-500">*</span></label>
+            <label className="form-label">Subjectivity Text <span className="text-crimson-500">*</span></label>
             <input
               type="text"
               value={newText}
@@ -896,7 +876,7 @@ function SubjectivityTab() {
             <Button variant="cta" size="sm" icon={Plus} onClick={handleAdd}>Add</Button>
           </div>
         </div>
-      </SubjModal>
+      </Modal>
 
       {/* Summary strip */}
       <div className="flex flex-wrap gap-3">
@@ -947,7 +927,7 @@ function SubjectivityTab() {
                   <td className="px-4 py-3 text-stone-800">{s.text}</td>
                   <td className="px-4 py-3">
                     {s.category === 'Pre-Bind' ? (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-flame-100 text-flame-700">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-ink-100 text-ink-700">
                         Pre-Bind
                       </span>
                     ) : (

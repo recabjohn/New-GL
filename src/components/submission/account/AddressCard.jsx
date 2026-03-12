@@ -82,7 +82,7 @@ export default function AddressCard({ data, onChange }) {
 
         {verified && (
           <div className="rounded-xl bg-stone-25 border border-stone-200 p-3.5 flex items-start gap-3">
-            <MapPin className="h-4 w-4 text-flame-500 mt-0.5 shrink-0" />
+            <MapPin className="h-4 w-4 text-ink-500 mt-0.5 shrink-0" />
             <div>
               <p className="text-sm font-medium text-stone-800">{data.line1}{data.line2 ? `, ${data.line2}` : ''}</p>
               <p className="text-sm text-stone-600">{data.city}, {data.state} {data.zip}</p>

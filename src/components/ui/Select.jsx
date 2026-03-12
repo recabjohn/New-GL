@@ -63,7 +63,7 @@ export default function Select({
     <div className={'w-full ' + className} ref={ref}>
       {label && (
         <label className="form-label">
-          {label}{required && <span className="text-flame-500 ml-0.5">*</span>}
+          {label}{required && <span className="text-crimson-500 ml-0.5">*</span>}
         </label>
       )}
       <div className="relative">

@@ -11,6 +11,10 @@ import SlideOver from '../components/ui/SlideOver'
 import Modal from '../components/ui/Modal'
 import { useToast } from '../components/ui/Toast'
 import { submissions } from '../data/mockData'
+import { useSimulatedLoading } from '../hooks/useFormGuard'
+import { SkeletonTable } from '../components/ui/Skeleton'
+import Table from '../components/ui/Table'
+import EmptyState from '../components/ui/EmptyState'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -38,7 +42,7 @@ function buildTimeline(row) {
     { event: 'Clearance Completed',   date: '03/02/2026',                        icon: CheckCircle2, color: 'text-sage-600',    bg: 'bg-sage-50'   },
     { event: 'Account Setup Saved',   date: '03/03/2026',                        icon: Building2,    color: 'text-ink-500',     bg: 'bg-ink-50'    },
     { event: 'Quote Generated',       date: '03/04/2026',                        icon: ShieldCheck,  color: 'text-amber-600',   bg: 'bg-amber-50'  },
-    { event: 'Quote Offered to Agent', date: '03/05/2026',                       icon: User,         color: 'text-flame-600',   bg: 'bg-flame-50'  },
+    { event: 'Quote Offered to Agent', date: '03/05/2026',                       icon: User,         color: 'text-ink-600',   bg: 'bg-ink-50'  },
   ]
 }
 
@@ -260,6 +264,7 @@ function CompareModal({ open, onClose, policies }) {
 export default function FindPolicyPage() {
   const navigate = useNavigate()
   const toast    = useToast()
+  const isLoading = useSimulatedLoading()
 
   // Search state
   const [searchQuery, setSearchQuery]   = useState('')
@@ -426,6 +431,164 @@ export default function FindPolicyPage() {
   // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
+
+  if (isLoading) {
+    return (
+      <div className="max-w-[1400px] mx-auto space-y-5">
+        <div>
+          <h1 className="text-xl font-bold text-stone-900 tracking-tight">Find Policy</h1>
+          <p className="text-sm text-stone-400 mt-0.5">Search active, bound, and expired policies</p>
+        </div>
+        <SkeletonTable rows={8} cols={6} />
+      </div>
+    )
+  }
+
+  // Column definitions for shared Table component
+  const findColumns = [
+    {
+      key: '_checkbox',
+      header: '',
+      render: (_, row) => (
+        <div onClick={e => e.stopPropagation()}>
+          <input
+            type="checkbox"
+            checked={compareIds.has(row.id)}
+            onChange={e => toggleCompare(row.id, e)}
+            className="rounded border-stone-300 text-ink-600 focus:ring-ink-400 cursor-pointer"
+          />
+        </div>
+      ),
+    },
+    {
+      key: 'submissionNumber',
+      header: 'SN #',
+      sortable: true,
+      render: (val) => (
+        <span className="font-mono text-xs font-bold text-ink-700 group-hover:text-ink-900">{val}</span>
+      ),
+    },
+    {
+      key: 'insuredName',
+      header: 'Insured Name',
+      sortable: true,
+      render: (val, row) => (
+        <div>
+          <p className="text-xs font-semibold text-stone-800">{val}</p>
+          {row.dba && row.dba !== row.insuredName && (
+            <p className="text-[10px] text-stone-400 mt-0.5">DBA: {row.dba}</p>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'agencyName',
+      header: 'Agency',
+      sortable: true,
+      render: (val, row) => (
+        <div>
+          <p className="text-xs text-stone-600">{val}</p>
+          <p className="text-[10px] text-stone-400 mt-0.5">{row.agentName}</p>
+        </div>
+      ),
+    },
+    {
+      key: 'transactionType',
+      header: 'Type',
+      render: (val) => (
+        <span className="text-[10px] font-semibold bg-ink-50 text-ink-700 px-2 py-0.5 rounded-full border border-ink-100 whitespace-nowrap">
+          {val}
+        </span>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      sortable: true,
+      render: (val) => <StatusBadge status={val} />,
+    },
+    {
+      key: 'effectiveDate',
+      header: 'Effective Date',
+      sortable: true,
+      render: (val) => <span className="text-xs font-mono text-stone-500">{val || '\u2014'}</span>,
+    },
+    {
+      key: 'needByDate',
+      header: 'Need By',
+      sortable: true,
+      render: (val) => <span className="text-xs font-mono text-stone-500">{val || '\u2014'}</span>,
+    },
+    {
+      key: 'assignee',
+      header: 'Assignee',
+      sortable: true,
+      render: (val) => (
+        <span className="flex items-center gap-1.5">
+          <span className="w-5 h-5 rounded-full bg-ink-700 text-white text-[9px] font-bold flex items-center justify-center shrink-0">
+            {val[0].toUpperCase()}
+          </span>
+          <span className="text-xs text-stone-500">{val}</span>
+        </span>
+      ),
+    },
+    {
+      key: '_actions',
+      header: 'Actions',
+      render: (_, row) => {
+        const isCompared = compareIds.has(row.id)
+        const isFlagged = flaggedIds.has(row.id)
+        return (
+          <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+            <div className="relative group/tip">
+              <button
+                onClick={() => navigate('/submissions/' + row.id)}
+                className="p-1.5 rounded-md text-stone-400 hover:text-ink-700 hover:bg-ink-50 transition-colors"
+              >
+                <Eye className="h-3.5 w-3.5" />
+              </button>
+              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 text-[10px] font-semibold bg-stone-800 text-white rounded whitespace-nowrap opacity-0 group-hover/tip:opacity-100 pointer-events-none transition-opacity z-10">
+                View submission
+              </span>
+            </div>
+            <div className="relative group/tip">
+              <button
+                onClick={e => toggleCompare(row.id, e)}
+                className={'p-1.5 rounded-md transition-colors ' + (isCompared ? 'text-ink-700 bg-ink-100' : 'text-stone-400 hover:text-ink-700 hover:bg-ink-50')}
+              >
+                <GitCompare className="h-3.5 w-3.5" />
+              </button>
+              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 text-[10px] font-semibold bg-stone-800 text-white rounded whitespace-nowrap opacity-0 group-hover/tip:opacity-100 pointer-events-none transition-opacity z-10">
+                {isCompared ? 'Remove from compare' : 'Add to compare'}
+              </span>
+            </div>
+            <div className="relative group/tip">
+              <button
+                onClick={e => handleCopySN(row.submissionNumber, e)}
+                className="p-1.5 rounded-md text-stone-400 hover:text-ink-700 hover:bg-ink-50 transition-colors"
+              >
+                <Copy className="h-3.5 w-3.5" />
+              </button>
+              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 text-[10px] font-semibold bg-stone-800 text-white rounded whitespace-nowrap opacity-0 group-hover/tip:opacity-100 pointer-events-none transition-opacity z-10">
+                Copy SN#
+              </span>
+            </div>
+            <div className="relative group/tip">
+              <button
+                onClick={e => toggleFlag(row.id, e)}
+                className={'p-1.5 rounded-md transition-colors ' + (isFlagged ? 'text-amber-600 bg-amber-50' : 'text-stone-400 hover:text-amber-600 hover:bg-amber-50')}
+              >
+                <Flag className="h-3.5 w-3.5" />
+              </button>
+              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 text-[10px] font-semibold bg-stone-800 text-white rounded whitespace-nowrap opacity-0 group-hover/tip:opacity-100 pointer-events-none transition-opacity z-10">
+                {isFlagged ? 'Unflag' : 'Flag row'}
+              </span>
+            </div>
+          </div>
+        )
+      },
+    },
+  ]
 
   return (
     <div className="max-w-[1400px] mx-auto">
@@ -623,171 +786,18 @@ export default function FindPolicyPage() {
               </button>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-stone-100 text-sm">
-                <thead className="bg-stone-25">
-                  <tr>
-                    {/* Checkbox column header */}
-                    <th className="pl-4 pr-2 py-3 w-8">
-                      <span className="sr-only">Select</span>
-                    </th>
-                    {['SN #', 'Insured Name', 'Agency', 'Type', 'Status', 'Effective Date', 'Need By', 'Assignee', 'Actions'].map(h => (
-                      <th
-                        key={h}
-                        className="px-4 py-3 text-left text-[10px] font-bold text-stone-400 uppercase tracking-widest whitespace-nowrap"
-                      >
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-stone-100 bg-white">
-                  {filtered.length === 0 ? (
-                    <tr>
-                      <td colSpan={10} className="text-center py-16">
-                        <div className="flex flex-col items-center gap-2">
-                          <Search className="h-8 w-8 text-stone-200" />
-                          <p className="text-sm text-stone-400 font-medium">No policies match your search</p>
-                          <p className="text-xs text-stone-300">Try adjusting your filters or search terms</p>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : filtered.map((row, i) => {
-                    const isCompared = compareIds.has(row.id)
-                    const isFlagged  = flaggedIds.has(row.id)
-
-                    return (
-                      <tr
-                        key={row.id}
-                        onClick={() => handleRowClick(row)}
-                        className={[
-                          'cursor-pointer transition-colors duration-100 hover:bg-ink-25 group',
-                          i % 2 === 1 ? 'bg-stone-25/40' : '',
-                          isCompared ? 'bg-ink-25' : '',
-                          isFlagged  ? 'border-l-2 border-amber-400' : '',
-                        ].join(' ')}
-                      >
-                        {/* Checkbox */}
-                        <td className="pl-4 pr-2 py-3 w-8" onClick={e => e.stopPropagation()}>
-                          <input
-                            type="checkbox"
-                            checked={isCompared}
-                            onChange={e => toggleCompare(row.id, e)}
-                            className="rounded border-stone-300 text-ink-600 focus:ring-ink-400 cursor-pointer"
-                          />
-                        </td>
-
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span className="font-mono text-xs font-bold text-ink-700 group-hover:text-ink-900">
-                            {row.submissionNumber}
-                          </span>
-                        </td>
-
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <div>
-                            <p className="text-xs font-semibold text-stone-800">{row.insuredName}</p>
-                            {row.dba && row.dba !== row.insuredName && (
-                              <p className="text-[10px] text-stone-400 mt-0.5">DBA: {row.dba}</p>
-                            )}
-                          </div>
-                        </td>
-
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <div>
-                            <p className="text-xs text-stone-600">{row.agencyName}</p>
-                            <p className="text-[10px] text-stone-400 mt-0.5">{row.agentName}</p>
-                          </div>
-                        </td>
-
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span className="text-[10px] font-semibold bg-ink-50 text-ink-700 px-2 py-0.5 rounded-full border border-ink-100 whitespace-nowrap">
-                            {row.transactionType}
-                          </span>
-                        </td>
-
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <StatusBadge status={row.status} />
-                        </td>
-
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span className="text-xs font-mono text-stone-500">{row.effectiveDate || '\u2014'}</span>
-                        </td>
-
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span className="text-xs font-mono text-stone-500">{row.needByDate || '\u2014'}</span>
-                        </td>
-
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span className="flex items-center gap-1.5">
-                            <span className="w-5 h-5 rounded-full bg-ink-700 text-white text-[9px] font-bold flex items-center justify-center shrink-0">
-                              {row.assignee[0].toUpperCase()}
-                            </span>
-                            <span className="text-xs text-stone-500">{row.assignee}</span>
-                          </span>
-                        </td>
-
-                        {/* Quick Actions column */}
-                        <td className="px-4 py-3 whitespace-nowrap" onClick={e => e.stopPropagation()}>
-                          <div className="flex items-center gap-1">
-                            {/* Eye — navigate to submission */}
-                            <div className="relative group/tip">
-                              <button
-                                onClick={() => navigate('/submissions/' + row.id)}
-                                className="p-1.5 rounded-md text-stone-400 hover:text-ink-700 hover:bg-ink-50 transition-colors"
-                              >
-                                <Eye className="h-3.5 w-3.5" />
-                              </button>
-                              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 text-[10px] font-semibold bg-stone-800 text-white rounded whitespace-nowrap opacity-0 group-hover/tip:opacity-100 pointer-events-none transition-opacity z-10">
-                                View submission
-                              </span>
-                            </div>
-
-                            {/* GitCompare — toggle compare */}
-                            <div className="relative group/tip">
-                              <button
-                                onClick={e => toggleCompare(row.id, e)}
-                                className={'p-1.5 rounded-md transition-colors ' + (isCompared ? 'text-ink-700 bg-ink-100' : 'text-stone-400 hover:text-ink-700 hover:bg-ink-50')}
-                              >
-                                <GitCompare className="h-3.5 w-3.5" />
-                              </button>
-                              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 text-[10px] font-semibold bg-stone-800 text-white rounded whitespace-nowrap opacity-0 group-hover/tip:opacity-100 pointer-events-none transition-opacity z-10">
-                                {isCompared ? 'Remove from compare' : 'Add to compare'}
-                              </span>
-                            </div>
-
-                            {/* Copy — copy SN# to clipboard */}
-                            <div className="relative group/tip">
-                              <button
-                                onClick={e => handleCopySN(row.submissionNumber, e)}
-                                className="p-1.5 rounded-md text-stone-400 hover:text-ink-700 hover:bg-ink-50 transition-colors"
-                              >
-                                <Copy className="h-3.5 w-3.5" />
-                              </button>
-                              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 text-[10px] font-semibold bg-stone-800 text-white rounded whitespace-nowrap opacity-0 group-hover/tip:opacity-100 pointer-events-none transition-opacity z-10">
-                                Copy SN#
-                              </span>
-                            </div>
-
-                            {/* Flag — toggle amber flag */}
-                            <div className="relative group/tip">
-                              <button
-                                onClick={e => toggleFlag(row.id, e)}
-                                className={'p-1.5 rounded-md transition-colors ' + (isFlagged ? 'text-amber-600 bg-amber-50' : 'text-stone-400 hover:text-amber-600 hover:bg-amber-50')}
-                              >
-                                <Flag className="h-3.5 w-3.5" />
-                              </button>
-                              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 text-[10px] font-semibold bg-stone-800 text-white rounded whitespace-nowrap opacity-0 group-hover/tip:opacity-100 pointer-events-none transition-opacity z-10">
-                                {isFlagged ? 'Unflag' : 'Flag row'}
-                              </span>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <Table
+              columns={findColumns}
+              data={filtered}
+              onRowClick={handleRowClick}
+              embedded
+              pagination={false}
+              emptyState={<EmptyState icon={Search} title="No policies match your search" description="Try adjusting your filters or search terms" />}
+              rowClassName={(row) => [
+                compareIds.has(row.id) ? 'bg-ink-25' : '',
+                flaggedIds.has(row.id) ? 'border-l-2 border-amber-400' : '',
+              ].join(' ')}
+            />
 
             {filtered.length > 0 && (
               <div className="px-5 py-3 border-t border-stone-100 flex items-center justify-between">
@@ -889,14 +899,12 @@ export default function FindPolicyPage() {
               Comparing {compareIds.size} {compareIds.size === 1 ? 'policy' : 'policies'}
             </span>
             <div className="flex gap-2 ml-2">
-              <button
-                onClick={() => setCompareModalOpen(true)}
-                className="px-3 py-1.5 bg-flame-500 hover:bg-flame-600 text-white text-xs font-semibold rounded-lg transition-colors"
-              >
+              <Button variant="cta" size="xs" onClick={() => setCompareModalOpen(true)}>
                 Compare
-              </button>
+              </Button>
               <button
                 onClick={clearCompare}
+                aria-label="Clear comparison"
                 className="p-1.5 text-stone-400 hover:text-white transition-colors rounded-lg hover:bg-stone-700"
               >
                 <X className="h-4 w-4" />

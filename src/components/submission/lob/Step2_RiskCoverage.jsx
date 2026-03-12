@@ -85,7 +85,7 @@ function CollapsibleSection({ title, badge, children, defaultOpen = false }) {
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-stone-800">{title}</span>
           {badge != null && badge > 0 && (
-            <span className="text-[10px] font-bold bg-flame-100 text-flame-700 px-1.5 py-0.5 rounded-full">{badge} on</span>
+            <span className="text-[10px] font-bold bg-ink-100 text-ink-700 px-1.5 py-0.5 rounded-full">{badge} on</span>
           )}
         </div>
         {open

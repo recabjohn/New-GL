@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from 'react'
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Download, FilePlus, ShieldCheck, TrendingUp, CheckCircle2,
@@ -8,13 +8,15 @@ import {
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import { useToast } from '../components/ui/Toast'
+import { useSimulatedLoading } from '../hooks/useFormGuard'
+import { SkeletonTable } from '../components/ui/Skeleton'
 
 // ── Icon + color map per event type ──────────────────────────────────────────
 const TYPE_META = {
   submission_created: { Icon: FilePlus,      dot: 'bg-ink-500',     label: 'Submission Created'   },
   clearance_check:    { Icon: ShieldCheck,   dot: 'bg-amber-400',   label: 'Clearance Check'      },
   quote_generated:    { Icon: TrendingUp,    dot: 'bg-sage-500',    label: 'Quote Generated'      },
-  policy_bound:       { Icon: CheckCircle2,  dot: 'bg-flame-500',   label: 'Policy Bound'         },
+  policy_bound:       { Icon: CheckCircle2,  dot: 'bg-sage-500',   label: 'Policy Bound'         },
   endorsement_filed:  { Icon: FileEdit,      dot: 'bg-crimson-500', label: 'Endorsement Filed'    },
   document_generated: { Icon: FileText,      dot: 'bg-stone-400',   label: 'Document Generated'   },
   status_changed:     { Icon: RefreshCw,     dot: 'bg-ink-300',     label: 'Status Changed'       },
@@ -140,7 +142,7 @@ const USER_COLORS = {
   uiuxAdmin:  'bg-ink-700',
   jsmith:     'bg-sage-600',
   adavis:     'bg-amber-500',
-  mrodriguez: 'bg-flame-500',
+  mrodriguez: 'bg-ink-500',
 }
 
 const PAGE_SIZE = 10
@@ -194,6 +196,7 @@ function LogEventModal({ onClose, onSubmit }) {
           <h2 className="text-base font-bold text-stone-900">Log Manual Event</h2>
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"
           >
             <X className="h-4 w-4" />
@@ -267,6 +270,7 @@ function LogEventModal({ onClose, onSubmit }) {
 export default function ActivityLogPage() {
   const navigate  = useNavigate()
   const toast     = useToast()
+  const isLoading = useSimulatedLoading()
   const nextIdRef = useRef(100)
 
   const [filterType,  setFilterType]  = useState('')
@@ -386,6 +390,18 @@ export default function ActivityLogPage() {
 
   const hasActiveFilters = filterType || filterUser || filterSN || chipFilter !== 'all'
 
+  if (isLoading) {
+    return (
+      <div className="max-w-[1200px] mx-auto space-y-5">
+        <div>
+          <h1 className="text-xl font-bold text-stone-900 tracking-tight">Activity Log</h1>
+          <p className="text-sm text-stone-400 mt-0.5">All system events across submissions</p>
+        </div>
+        <SkeletonTable rows={10} cols={5} />
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-[1200px] mx-auto space-y-4">
 
@@ -432,7 +448,7 @@ export default function ActivityLogPage() {
               className={[
                 'px-3 py-1 rounded-full text-xs font-bold transition-all',
                 chipFilter === chip.key
-                  ? 'bg-flame-500 text-white shadow-sm'
+                  ? 'bg-ink-700 text-white shadow-sm'
                   : 'bg-stone-100 text-stone-600 hover:bg-stone-200',
               ].join(' ')}
             >

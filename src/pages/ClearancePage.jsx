@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   ShieldCheck, AlertTriangle, Clock, CheckCircle2,
@@ -10,6 +10,8 @@ import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
 import { useToast } from '../components/ui/Toast'
 import { submissions } from '../data/mockData'
+import { useSimulatedLoading } from '../hooks/useFormGuard'
+import { SkeletonCardRow, SkeletonTable } from '../components/ui/Skeleton'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -211,6 +213,7 @@ function ConflictModal({ open, submission, onClose, onOverride, onDecline }) {
 export default function ClearancePage() {
   const navigate = useNavigate()
   const toast    = useToast()
+  const isLoading = useSimulatedLoading()
 
   const [search, setSearch]               = useState('')
   const [kpiFilter, setKpiFilter]         = useState(null)
@@ -415,6 +418,21 @@ export default function ClearancePage() {
   // Render
   // ---------------------------------------------------------------------------
 
+  if (isLoading) {
+    return (
+      <div className="max-w-[1200px] mx-auto space-y-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-stone-900 tracking-tight">Clearance Queue</h1>
+            <p className="text-sm text-stone-400 mt-0.5">Review and clear submissions before account setup</p>
+          </div>
+        </div>
+        <SkeletonCardRow count={4} />
+        <SkeletonTable rows={6} cols={6} />
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-[1200px] mx-auto space-y-5">
 
@@ -448,7 +466,7 @@ export default function ClearancePage() {
               className={[
                 'bg-white rounded-xl border shadow-card px-5 py-4 text-left transition-all duration-150',
                 isDisabled ? 'cursor-default' : 'cursor-pointer hover:shadow-elevated',
-                isActive ? 'ring-2 ring-flame-500 border-flame-300' : 'border-stone-200',
+                isActive ? 'ring-2 ring-ink-500 border-ink-300' : 'border-stone-200',
               ].join(' ')}
             >
               <div className={stat.bg + ' w-9 h-9 rounded-lg flex items-center justify-center mb-3'}>
@@ -457,7 +475,7 @@ export default function ClearancePage() {
               <p className="text-2xl font-black font-mono text-stone-900">{stat.value}</p>
               <p className="text-xs font-semibold text-stone-500 mt-0.5">{stat.label}</p>
               {isActive && (
-                <p className="text-[10px] text-flame-600 font-semibold mt-1">Filtering active</p>
+                <p className="text-[10px] text-ink-600 font-semibold mt-1">Filtering active</p>
               )}
             </button>
           )
@@ -477,7 +495,7 @@ export default function ClearancePage() {
             {kpiFilter && kpiFilter !== KPI_AVG && (
               <button
                 onClick={() => setKpiFilter(null)}
-                className="inline-flex items-center gap-1 text-[10px] font-semibold text-flame-600 bg-flame-50 px-2 py-0.5 rounded-full hover:bg-flame-100 transition-colors"
+                className="inline-flex items-center gap-1 text-[10px] font-semibold text-ink-600 bg-ink-50 px-2 py-0.5 rounded-full hover:bg-ink-100 transition-colors"
               >
                 {kpiFilter}
                 <X className="h-2.5 w-2.5" />

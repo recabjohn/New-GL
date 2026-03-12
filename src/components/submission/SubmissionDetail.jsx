@@ -249,7 +249,7 @@ function LifecycleTimeline({ submissionId }) {
                     s.done
                       ? 'bg-sage-500'
                       : s.current
-                        ? 'bg-flame-400 animate-pulse'
+                        ? 'bg-ink-400 animate-pulse'
                         : 'bg-stone-100 border border-stone-200',
                   ].join(' ')}
                 >
@@ -276,13 +276,13 @@ function LifecycleTimeline({ submissionId }) {
                     s.done
                       ? 'text-sage-700'
                       : s.current
-                        ? 'text-flame-600'
+                        ? 'text-ink-600'
                         : 'text-stone-400',
                   ].join(' ')}
                 >
                   {s.label}
                   {s.current && (
-                    <span className="ml-1.5 text-[9px] font-bold uppercase tracking-widest text-flame-500 bg-flame-50 px-1.5 py-0.5 rounded-full">
+                    <span className="ml-1.5 text-[9px] font-bold uppercase tracking-widest text-ink-600 bg-ink-50 px-1.5 py-0.5 rounded-full">
                       Current
                     </span>
                   )}
@@ -345,7 +345,10 @@ export default function SubmissionDetail() {
   const submission   = submissions.find(s => s.id === id) || submissions[0]
   const currentIndex = TABS.findIndex(t => t.id === tab)
 
-  const changeTab = t => setSearchParams({ tab: t })
+  const changeTab = t => {
+    setSearchParams({ tab: t })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-4">

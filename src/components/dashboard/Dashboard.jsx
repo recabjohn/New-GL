@@ -4,6 +4,7 @@ import {
   Plus, FileText, Clock, TrendingUp, CheckCircle2,
   ArrowRight, AlertCircle, CalendarCheck, Activity,
   ChevronRight, ArrowUpRight, ArrowDownRight, Target, X, Check, ListTodo,
+  PanelRightOpen, PanelRightClose, ChevronDown, ChevronUp,
 } from 'lucide-react'
 import Button from '../ui/Button'
 import Modal from '../ui/Modal'
@@ -12,19 +13,19 @@ import Table from '../ui/Table'
 import { StatusBadge, PriorityBadge } from '../ui/Badge'
 import SubmissionFilters from './SubmissionFilters'
 import NewSubmissionModal from './NewSubmissionModal'
-import { submissions, assignees } from '../../data/mockData'
+import { submissions, assignees, STAGE_COLORS } from '../../data/mockData'
 import { useToast } from '../ui/Toast'
 import { useSimulatedLoading } from '../../hooks/useFormGuard'
 import { SkeletonCardRow, SkeletonTable } from '../ui/Skeleton'
 
 // ── Workflow Pipeline ────────────────────────────────────────────────────────
 const PIPELINE = [
-  { id: 'In Progress', label: 'New Submission', count: 7,  dot: '#2A5BAD' },
-  { id: 'Clearance',   label: 'Clearance',      count: 4,  dot: '#D97706' },
-  { id: 'Registered',  label: 'Rating',          count: 4,  dot: '#4879C2' },
-  { id: 'Offered',     label: 'Quote',           count: 5,  dot: '#1AAD61' },
-  { id: 'Bound',       label: 'Bind',            count: 2,  dot: '#F05A2A' },
-  { id: 'Issued',      label: 'Issue',           count: 1,  dot: '#0E713E' },
+  { id: 'In Progress', label: 'New Submission', count: 7,  dot: STAGE_COLORS['In Progress'] },
+  { id: 'Clearance',   label: 'Clearance',      count: 4,  dot: STAGE_COLORS['Clearance']   },
+  { id: 'Registered',  label: 'Rating',          count: 4,  dot: STAGE_COLORS['Registered']  },
+  { id: 'Offered',     label: 'Quote',           count: 5,  dot: STAGE_COLORS['Offered']     },
+  { id: 'Bound',       label: 'Bind',            count: 2,  dot: STAGE_COLORS['Bound']       },
+  { id: 'Issued',      label: 'Issue',           count: 1,  dot: STAGE_COLORS['Issued']      },
 ]
 
 // ── KPI cards ────────────────────────────────────────────────────────────────
@@ -32,7 +33,7 @@ const KPIS = [
   { label: 'Total Active',       value: '20',   delta: '+3',   trendUp: true,  positive: true, sub: 'vs last month',   icon: FileText,     color: 'text-ink-600',   bg: 'bg-ink-50'   },
   { label: 'Bound MTD',          value: '3',    delta: '+1',   trendUp: true,  positive: true, sub: 'vs September',    icon: CheckCircle2, color: 'text-sage-600',  bg: 'bg-sage-50'  },
   { label: 'Avg Days to Quote',  value: '4.2d', delta: '−0.8', trendUp: false, positive: true, sub: 'day improvement', icon: Clock,        color: 'text-amber-600', bg: 'bg-amber-50' },
-  { label: 'Quote-to-Bind Rate', value: '76%',  delta: '+4%',  trendUp: true,  positive: true, sub: 'vs last quarter', icon: Target,       color: 'text-flame-600', bg: 'bg-flame-50' },
+  { label: 'Quote-to-Bind Rate', value: '76%',  delta: '+4%',  trendUp: true,  positive: true, sub: 'vs last quarter', icon: Target,       color: 'text-ink-600',   bg: 'bg-ink-50'   },
 ]
 
 // ── Needs Attention ──────────────────────────────────────────────────────────
@@ -69,6 +70,8 @@ export default function Dashboard() {
   const [modal, setModal]       = useState(false)
   const [activeStage, setStage] = useState(null)
   const [, forceUpdate]         = useState(0)
+  const [rightPanelOpen, setRightPanelOpen] = useState(false)
+  const [kpisExpanded, setKpisExpanded]     = useState(true)
 
   // ── Bulk Action state ──
   const [selectedIds, setSelectedIds]         = useState(new Set())
@@ -312,6 +315,14 @@ export default function Dashboard() {
         </div>
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setRightPanelOpen(v => !v)}
+            title={rightPanelOpen ? 'Hide side panel' : 'Show side panel'}
+            aria-label={rightPanelOpen ? 'Hide side panel' : 'Show side panel'}
+            className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+          >
+            {rightPanelOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
+          </button>
+          <button
             onClick={() => setExportModalOpen(true)}
             className="px-3 py-1.5 text-xs font-semibold text-stone-600 bg-white border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors"
           >
@@ -323,7 +334,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Workflow Pipeline ── */}
+      {/* ── Workflow Pipeline (compact) ── */}
       <div className="bg-white rounded-xl border border-stone-200 shadow-card mb-4 overflow-hidden">
         <div className="flex items-stretch divide-x divide-stone-100">
           {PIPELINE.map((stage, i) => {
@@ -333,8 +344,8 @@ export default function Dashboard() {
                 key={stage.id}
                 onClick={() => setStage(active ? null : stage.id)}
                 className={[
-                  'flex-1 flex flex-col items-center py-4 px-2 relative transition-all group',
-                  active ? 'bg-stone-50' : 'hover:bg-stone-25',
+                  'flex-1 flex items-center justify-center gap-2 py-3 px-2 relative transition-all duration-200 group',
+                  active ? 'bg-ink-50 ring-1 ring-inset ring-ink-200' : 'hover:bg-stone-25',
                 ].join(' ')}
               >
                 {i > 0 && (
@@ -343,7 +354,7 @@ export default function Dashboard() {
                   </div>
                 )}
                 <div
-                  className="text-3xl font-black leading-none mb-1 transition-transform group-hover:scale-110"
+                  className="text-xl font-black leading-none transition-transform duration-200 group-hover:scale-110"
                   style={{ color: stage.dot }}
                 >
                   {stage.count}
@@ -351,10 +362,6 @@ export default function Dashboard() {
                 <div className="text-[11px] font-semibold text-stone-500 group-hover:text-stone-800 transition-colors">
                   {stage.label}
                 </div>
-                <div
-                  className="mt-1.5 w-1.5 h-1.5 rounded-full transition-colors"
-                  style={{ backgroundColor: active ? stage.dot : '#E7E5E4' }}
-                />
               </button>
             )
           })}
@@ -371,32 +378,90 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* ── KPI Row ── */}
-      {loading ? (
-        <div className="mb-4"><SkeletonCardRow /></div>
-      ) : (
-        <div className="grid grid-cols-4 gap-4 mb-4">
-          {KPIS.map(k => (
-            <div key={k.label} className="bg-white rounded-xl border border-stone-200 shadow-card px-5 py-4 hover:shadow-elevated transition-shadow">
-              <div className="flex items-start justify-between mb-3">
-                <div className={`${k.bg} p-2 rounded-lg`}>
-                  <k.icon className={`h-4 w-4 ${k.color}`} />
+      {/* ── KPI Row (collapsible) ── */}
+      <div className="mb-4">
+        <button
+          onClick={() => setKpisExpanded(v => !v)}
+          className="flex items-center gap-1.5 text-xs font-semibold text-stone-400 hover:text-stone-600 transition-colors mb-2"
+        >
+          {kpisExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          {kpisExpanded ? 'Hide metrics' : 'Show metrics'}
+        </button>
+        {loading ? (
+          kpisExpanded && <SkeletonCardRow />
+        ) : kpisExpanded && (
+          <div className="grid grid-cols-4 gap-4">
+            {KPIS.map(k => (
+              <div key={k.label} className="bg-white rounded-xl border border-stone-200 shadow-card px-5 py-4 hover:shadow-elevated transition-shadow duration-200">
+                <div className="flex items-start justify-between mb-3">
+                  <div className={`${k.bg} p-2 rounded-lg`}>
+                    <k.icon className={`h-4 w-4 ${k.color}`} />
+                  </div>
+                  <span className={[
+                    'flex items-center gap-0.5 text-[11px] font-bold',
+                    k.positive ? 'text-sage-600' : 'text-crimson-600',
+                  ].join(' ')}>
+                    {k.trendUp
+                      ? <ArrowUpRight className="h-3.5 w-3.5" />
+                      : <ArrowDownRight className="h-3.5 w-3.5" />}
+                    {k.delta}
+                  </span>
                 </div>
-                <span className={[
-                  'flex items-center gap-0.5 text-[11px] font-bold',
-                  k.positive ? 'text-sage-600' : 'text-crimson-600',
-                ].join(' ')}>
-                  {k.trendUp
-                    ? <ArrowUpRight className="h-3.5 w-3.5" />
-                    : <ArrowDownRight className="h-3.5 w-3.5" />}
-                  {k.delta}
-                </span>
+                <p className="text-2xl font-black text-stone-900 tracking-tight font-mono">{k.value}</p>
+                <p className="text-xs font-semibold text-stone-500 mt-0.5">{k.label}</p>
+                <p className="text-[10px] text-stone-300 mt-0.5 uppercase tracking-wide">{k.sub}</p>
               </div>
-              <p className="text-2xl font-black text-stone-900 tracking-tight font-mono">{k.value}</p>
-              <p className="text-xs font-semibold text-stone-500 mt-0.5">{k.label}</p>
-              <p className="text-[10px] text-stone-300 mt-0.5 uppercase tracking-wide">{k.sub}</p>
-            </div>
-          ))}
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── Active filter chips ── */}
+      {(filters.priority || filters.status || filters.transactionType || filters.assignee || filters.search || activeStage) && (
+        <div className="flex items-center gap-1.5 flex-wrap mb-3">
+          <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider mr-1">Active filters:</span>
+          {activeStage && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-ink-50 text-ink-700 text-xs font-medium rounded-lg border border-ink-100">
+              Stage: {PIPELINE.find(p => p.id === activeStage)?.label}
+              <button onClick={() => setStage(null)} aria-label="Clear stage filter" className="ml-0.5 hover:text-ink-900"><X className="h-3 w-3" /></button>
+            </span>
+          )}
+          {filters.priority && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-stone-100 text-stone-600 text-xs font-medium rounded-lg">
+              Priority: {filters.priority}
+              <button onClick={() => setFilters(f => ({ ...f, priority: '' }))} aria-label="Clear priority filter" className="ml-0.5 hover:text-stone-800"><X className="h-3 w-3" /></button>
+            </span>
+          )}
+          {filters.status && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-stone-100 text-stone-600 text-xs font-medium rounded-lg">
+              Status: {filters.status}
+              <button onClick={() => setFilters(f => ({ ...f, status: '' }))} aria-label="Clear status filter" className="ml-0.5 hover:text-stone-800"><X className="h-3 w-3" /></button>
+            </span>
+          )}
+          {filters.transactionType && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-stone-100 text-stone-600 text-xs font-medium rounded-lg">
+              Type: {filters.transactionType}
+              <button onClick={() => setFilters(f => ({ ...f, transactionType: '' }))} aria-label="Clear type filter" className="ml-0.5 hover:text-stone-800"><X className="h-3 w-3" /></button>
+            </span>
+          )}
+          {filters.assignee && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-stone-100 text-stone-600 text-xs font-medium rounded-lg">
+              Owner: {filters.assignee}
+              <button onClick={() => setFilters(f => ({ ...f, assignee: '' }))} aria-label="Clear assignee filter" className="ml-0.5 hover:text-stone-800"><X className="h-3 w-3" /></button>
+            </span>
+          )}
+          {filters.search && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-stone-100 text-stone-600 text-xs font-medium rounded-lg">
+              Search: &ldquo;{filters.search}&rdquo;
+              <button onClick={() => setFilters(f => ({ ...f, search: '' }))} aria-label="Clear search filter" className="ml-0.5 hover:text-stone-800"><X className="h-3 w-3" /></button>
+            </span>
+          )}
+          <button
+            onClick={() => { setFilters(defaultFilters); setStage(null) }}
+            className="text-[10px] font-semibold text-stone-400 hover:text-crimson-600 transition-colors ml-1"
+          >
+            Clear all
+          </button>
         </div>
       )}
 
@@ -440,8 +505,9 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* ── Right panel ── */}
-        <div className="w-[264px] shrink-0 space-y-3">
+        {/* ── Right panel (toggleable) ── */}
+        {rightPanelOpen && (
+        <div className="w-[264px] shrink-0 space-y-3 transition-all duration-200">
 
           {/* Needs Attention */}
           <div className="bg-white rounded-xl border border-stone-200 shadow-card overflow-hidden">
@@ -485,6 +551,7 @@ export default function Dashboard() {
                     }}
                     className="ml-auto p-0.5 rounded hover:bg-crimson-100 text-stone-400 hover:text-crimson-600"
                     title="Dismiss"
+                    aria-label="Dismiss alert"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -625,6 +692,7 @@ export default function Dashboard() {
           </div>
 
         </div>
+        )}
       </div>
 
       {/* ── New Submission Modal ── */}
@@ -723,7 +791,7 @@ export default function Dashboard() {
             className={[
               'flex-1 flex flex-col items-center gap-1.5 py-4 rounded-xl border-2 transition-all',
               exportFormat === 'csv'
-                ? 'border-flame-400 bg-flame-50 text-flame-700'
+                ? 'border-ink-400 bg-ink-50 text-ink-700'
                 : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300',
             ].join(' ')}
           >
@@ -736,7 +804,7 @@ export default function Dashboard() {
             className={[
               'flex-1 flex flex-col items-center gap-1.5 py-4 rounded-xl border-2 transition-all',
               exportFormat === 'json'
-                ? 'border-flame-400 bg-flame-50 text-flame-700'
+                ? 'border-ink-400 bg-ink-50 text-ink-700'
                 : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300',
             ].join(' ')}
           >
@@ -787,7 +855,7 @@ export default function Dashboard() {
           {/* SN# field with datalist */}
           <div>
             <label className="block text-xs font-semibold text-stone-700 mb-1">
-              Submission # <span className="text-flame-500">*</span>
+              Submission # <span className="text-crimson-500">*</span>
             </label>
             <input
               list="task-sn-list"
@@ -810,7 +878,7 @@ export default function Dashboard() {
           {/* Task Type */}
           <div>
             <label className="block text-xs font-semibold text-stone-700 mb-1">
-              Task Type <span className="text-flame-500">*</span>
+              Task Type <span className="text-crimson-500">*</span>
             </label>
             <select
               value={newTaskType}

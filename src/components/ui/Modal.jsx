@@ -10,19 +10,26 @@ export default function Modal({ open, onClose, title, subtitle, children, footer
     return () => { document.body.style.overflow = '' }
   }, [open])
 
+  useEffect(() => {
+    if (!open) return
+    const handleKey = (e) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handleKey)
+    return () => document.removeEventListener('keydown', handleKey)
+  }, [open, onClose])
+
   if (!open) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-stone-900/50 backdrop-blur-sm" onClick={onClose} />
-      <div className={`relative bg-white rounded-2xl shadow-modal w-full ${sizes[size]} max-h-[90vh] flex flex-col`}>
+      <div className={`relative bg-white rounded-xl shadow-modal w-full ${sizes[size]} max-h-[90vh] flex flex-col`}>
         {/* Header */}
         <div className="flex items-start justify-between px-6 py-4 border-b border-stone-100">
           <div>
             <h2 className="text-base font-semibold text-stone-900">{title}</h2>
             {subtitle && <p className="text-sm text-stone-500 mt-0.5">{subtitle}</p>}
           </div>
-          <button onClick={onClose} className="p-1 rounded-md text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors">
+          <button onClick={onClose} aria-label="Close dialog" className="p-1 rounded-md text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -32,7 +39,7 @@ export default function Modal({ open, onClose, title, subtitle, children, footer
         </div>
         {/* Footer */}
         {footer && (
-          <div className="px-6 py-4 border-t border-stone-100 bg-stone-25 rounded-b-2xl flex justify-end gap-2">
+          <div className="px-6 py-4 border-t border-stone-100 bg-stone-25 rounded-b-xl flex justify-end gap-2">
             {footer}
           </div>
         )}

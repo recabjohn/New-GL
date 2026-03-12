@@ -14,10 +14,10 @@ export default function Card({
   const [open, setOpen] = useState(defaultOpen)
 
   return (
-    <div className={`bg-white rounded-xl border border-stone-200 shadow-card overflow-hidden ${className}`}>
+    <div className={`bg-white rounded-xl border border-stone-200 shadow-card overflow-hidden transition-shadow duration-200 hover:shadow-md ${className}`}>
       {title && (
         <div
-          className={`flex items-center justify-between px-5 py-3.5 border-b border-stone-100 ${collapsible ? 'cursor-pointer select-none hover:bg-stone-25' : ''}`}
+          className={`flex items-center justify-between px-5 py-3 border-b border-stone-100 ${collapsible ? 'cursor-pointer select-none hover:bg-stone-25' : ''}`}
           onClick={collapsible ? () => setOpen(o => !o) : undefined}
         >
           <div>

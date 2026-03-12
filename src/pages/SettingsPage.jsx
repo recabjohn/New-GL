@@ -11,33 +11,7 @@ import Select from '../components/ui/Select'
 import Toggle from '../components/ui/Toggle'
 import Badge from '../components/ui/Badge'
 import { useToast } from '../components/ui/Toast'
-
-// ─── Shared Modal Shell ───────────────────────────────────────────────────────
-
-function Modal({ open, onClose, title, children }) {
-  if (!open) return null
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
-        <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between">
-          <h3 className="text-base font-semibold text-stone-900">{title}</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-stone-400 hover:text-stone-600 transition-colors"
-          >
-            <span className="sr-only">Close</span>
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        <div className="px-6 py-5">{children}</div>
-      </div>
-    </div>
-  )
-}
+import Modal from '../components/ui/Modal'
 
 // ─── Profile Tab ────────────────────────────────────────────────────────────
 
@@ -97,7 +71,7 @@ function ProfileTab() {
       {/* Avatar */}
       <Card title="Profile Photo">
         <div className="flex items-center gap-6">
-          <div className="flex-shrink-0 h-20 w-20 rounded-full bg-flame-500 flex items-center justify-center overflow-hidden">
+          <div className="flex-shrink-0 h-20 w-20 rounded-full bg-ink-700 flex items-center justify-center overflow-hidden">
             {avatarSrc ? (
               <img src={avatarSrc} alt="Profile" className="w-full h-full object-cover" />
             ) : (
@@ -322,11 +296,11 @@ function ThemeCard({ id, label, description, selected, onClick }) {
       className={[
         'flex-1 rounded-xl border-2 p-4 text-left transition-all duration-150',
         selected
-          ? 'border-flame-500 ring-2 ring-flame-200 bg-flame-50'
+          ? 'border-ink-500 ring-2 ring-ink-200 bg-ink-50'
           : 'border-stone-200 hover:border-stone-300 bg-white',
       ].join(' ')}
     >
-      <p className={`text-sm font-semibold mb-0.5 ${selected ? 'text-flame-700' : 'text-stone-800'}`}>{label}</p>
+      <p className={`text-sm font-semibold mb-0.5 ${selected ? 'text-ink-700' : 'text-stone-800'}`}>{label}</p>
       <p className="text-xs text-stone-400">{description}</p>
     </button>
   )
@@ -341,7 +315,7 @@ function DarkModePreview() {
           <div className="h-2 bg-ink-700 rounded w-10" />
           <div className="h-1.5 bg-ink-800 rounded w-8" />
           <div className="h-1.5 bg-ink-800 rounded w-9" />
-          <div className="h-1.5 bg-flame-600 rounded w-7" />
+          <div className="h-1.5 bg-ink-600 rounded w-7" />
           <div className="h-1.5 bg-ink-800 rounded w-8" />
         </div>
         {/* Mini content area */}
@@ -351,7 +325,7 @@ function DarkModePreview() {
             <div className="flex-1 bg-ink-900 rounded-lg p-2 flex flex-col gap-1">
               <div className="h-1.5 bg-ink-700 rounded w-full" />
               <div className="h-1.5 bg-ink-700 rounded w-3/4" />
-              <div className="h-2 bg-flame-600 rounded w-12 mt-1" />
+              <div className="h-2 bg-ink-600 rounded w-12 mt-1" />
             </div>
             <div className="flex-1 bg-ink-900 rounded-lg p-2 flex flex-col gap-1">
               <div className="h-1.5 bg-ink-700 rounded w-full" />

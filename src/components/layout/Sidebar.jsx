@@ -118,7 +118,7 @@ function UserDropdown({ onClose }) {
             <button
               key={v}
               onClick={() => handleSwitchView(v)}
-              className="w-full text-left px-3 py-1.5 text-xs text-stone-600 bg-stone-50 hover:bg-flame-50 hover:text-flame-700 rounded-lg transition-colors font-medium"
+              className="w-full text-left px-3 py-1.5 text-xs text-stone-600 bg-stone-50 hover:bg-ink-50 hover:text-ink-700 rounded-lg transition-colors font-medium"
             >
               {v}
             </button>
@@ -225,7 +225,7 @@ export default function Sidebar() {
                       className={[
                         'flex items-center gap-3 px-2 py-2 rounded-lg text-sm font-medium transition-colors duration-150',
                         active
-                          ? 'bg-ink-800 text-white border-l-2 border-flame-400 pl-[6px]'
+                          ? 'bg-ink-800 text-white border-l-2 border-ink-400 pl-[6px]'
                           : 'text-ink-400 hover:bg-ink-900 hover:text-ink-100',
                       ].join(' ')}
                     >
@@ -233,7 +233,7 @@ export default function Sidebar() {
                       <span className="relative shrink-0">
                         <Icon className="h-4 w-4" />
                         {collapsed && showBadge && (
-                          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-flame-500 ring-1 ring-ink-950" />
+                          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-crimson-500 ring-1 ring-ink-950" />
                         )}
                       </span>
 
@@ -241,12 +241,12 @@ export default function Sidebar() {
                         <>
                           <span className="truncate text-[13px] flex-1">{label}</span>
                           {showBadge ? (
-                            <span className="bg-flame-500 text-white text-xs font-mono px-1.5 py-0.5 rounded-full ml-auto shrink-0 leading-none">
+                            <span className="bg-crimson-500 text-white text-xs font-mono px-1.5 py-0.5 rounded-full ml-auto shrink-0 leading-none">
                               {count}
                             </span>
                           ) : (
                             active && (
-                              <span className="ml-auto w-1.5 h-1.5 rounded-full bg-flame-400 shrink-0" />
+                              <span className="ml-auto w-1.5 h-1.5 rounded-full bg-ink-400 shrink-0" />
                             )
                           )}
                         </>
@@ -255,11 +255,11 @@ export default function Sidebar() {
 
                     {/* Pinned active submission chip — under Submissions when on /submissions/:id */}
                     {!collapsed && label === 'Submissions' && activeSubmissionId && (
-                      <div className="mx-2 mt-0.5 flex items-center gap-1.5 bg-flame-50 text-flame-700 text-xs font-mono px-2 py-1 rounded-md border border-flame-200">
+                      <div className="mx-2 mt-0.5 flex items-center gap-1.5 bg-ink-50 text-ink-700 text-xs font-mono px-2 py-1 rounded-md border border-ink-200">
                         <span className="flex-1 truncate">{activeSubmissionId}</span>
                         <button
                           onClick={() => navigate('/submissions')}
-                          className="shrink-0 text-flame-400 hover:text-flame-700 transition-colors"
+                          className="shrink-0 text-ink-400 hover:text-ink-700 transition-colors"
                           title="Back to submissions"
                         >
                           <X className="h-3 w-3" />
@@ -290,37 +290,7 @@ export default function Sidebar() {
           </NavLink>
         ))}
 
-        {/* User card — clicking opens dropdown */}
-        <div className="relative">
-          <button
-            onClick={() => setShowUserMenu((v) => !v)}
-            className={[
-              'w-full flex items-center gap-3 px-2 py-2.5 mt-1 rounded-lg hover:bg-ink-900 transition-colors duration-150',
-              collapsed ? 'justify-center' : '',
-            ].join(' ')}
-          >
-            <div className="w-7 h-7 rounded-full bg-flame-500 flex items-center justify-center text-white text-[11px] font-bold shrink-0 ring-2 ring-flame-700">
-              John
-            </div>
-            {!collapsed && (
-              <>
-                <div className="flex-1 min-w-0 text-left">
-                  <p className="text-xs font-semibold text-ink-100 truncate">John</p>
-                  <p className="text-[10px] text-ink-500 truncate">Underwriter</p>
-                </div>
-                {showUserMenu
-                  ? <ChevronUp className="h-3 w-3 text-ink-600 shrink-0" />
-                  : <ChevronDown className="h-3 w-3 text-ink-600 shrink-0" />
-                }
-              </>
-            )}
-          </button>
-
-          {/* Dropdown rendered only when expanded; outside-click is handled inside UserDropdown */}
-          {showUserMenu && !collapsed && (
-            <UserDropdown onClose={() => setShowUserMenu(false)} />
-          )}
-        </div>
+        {/* User card removed — redundant with TopBar user menu */}
       </div>
 
       {/* ------------------------------------------------------------------ */}

@@ -528,6 +528,7 @@ export default function Step3_Locations({ data, onChange }) {
               <Button variant="secondary" size="sm" onClick={handleAddState}>Add</Button>
               <button type="button"
                 onClick={() => { setAddingState(false); setNewStateCode(''); setNewSubline(''); setAddStateError('') }}
+                aria-label="Cancel adding state"
                 className="p-1.5 text-stone-400 hover:text-stone-600 transition-colors"
               >
                 <X className="h-4 w-4" />
@@ -793,6 +794,7 @@ export default function Step3_Locations({ data, onChange }) {
                   </div>
                   <button type="button"
                     onClick={() => deleteClass(classTargetStateId, classTargetLocId, cls.id)}
+                    aria-label="Delete classification"
                     className="p-1.5 text-stone-400 hover:text-crimson-600 hover:bg-crimson-50 rounded transition-colors">
                     <X className="h-4 w-4" />
                   </button>
@@ -901,6 +903,7 @@ export default function Step3_Locations({ data, onChange }) {
                 <button
                   type="button"
                   onClick={() => setCF('additionalCoverages', classForm.additionalCoverages.filter((_, i) => i !== idx))}
+                  aria-label="Remove coverage"
                   className="p-1 text-stone-300 hover:text-crimson-600 hover:bg-crimson-50 rounded transition-colors ml-3"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -992,6 +995,7 @@ export default function Step3_Locations({ data, onChange }) {
                       <button
                         type="button"
                         title="Delete classification"
+                        aria-label="Delete classification"
                         onClick={() => deleteClass(manageStateId, manageLocId2, cls.id)}
                         className="p-1.5 text-stone-300 hover:text-crimson-600 hover:bg-crimson-50 rounded transition-colors"
                       >

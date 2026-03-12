@@ -1,4 +1,16 @@
 // ---------------------------------------------------------------------------
+// STAGE COLORS — inline style–safe hex values mapped to Tailwind design tokens
+// ---------------------------------------------------------------------------
+export const STAGE_COLORS = {
+  'In Progress': '#2A5BAD', // ink-500
+  'Clearance':   '#D97706', // amber-600
+  'Registered':  '#4879C2', // ink-400
+  'Offered':     '#1AAD61', // sage-500
+  'Bound':       '#F05A2A', // flame-500
+  'Issued':      '#0E713E', // sage-700
+}
+
+// ---------------------------------------------------------------------------
 // SUBMISSIONS  (20 rows for dashboard table)
 // ---------------------------------------------------------------------------
 export const submissions = [

@@ -79,7 +79,7 @@ export default function LOBTab({ onComplete }) {
                 >
                   <div className={[
                     'w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all shrink-0',
-                    isActive ? 'bg-flame-500 text-white ring-4 ring-flame-100' : isDone ? 'bg-sage-500 text-white' : 'bg-stone-100 text-stone-400',
+                    isActive ? 'bg-ink-700 text-white ring-4 ring-ink-100' : isDone ? 'bg-sage-500 text-white' : 'bg-stone-100 text-stone-400',
                   ].join(' ')}>
                     {isDone ? <Check className="h-4 w-4" /> : num}
                   </div>

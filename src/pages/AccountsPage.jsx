@@ -2,21 +2,25 @@ import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Plus, AlertCircle, Users, TrendingUp, CalendarClock,
-  CheckCircle2, ChevronLeft, ChevronRight, Search,
+  CheckCircle2, ChevronRight, Search,
   X, Download, ExternalLink, Phone, Mail,
   Clock, FileCheck, RefreshCw, UserCheck,
   ChevronRight as Arrow, Loader2,
 } from 'lucide-react'
 import Button from '../components/ui/Button'
 import { StatusBadge } from '../components/ui/Badge'
+import Table from '../components/ui/Table'
+import EmptyState from '../components/ui/EmptyState'
 import { useToast } from '../components/ui/Toast'
 import { submissions, assignees, agencies, usStates } from '../data/mockData'
+import { useSimulatedLoading } from '../hooks/useFormGuard'
+import { SkeletonCardRow, SkeletonTable } from '../components/ui/Skeleton'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const AVATAR_COLORS = [
   'bg-ink-600',
-  'bg-flame-500',
+  'bg-ink-500',
   'bg-sage-600',
   'bg-amber-500',
   'bg-crimson-600',
@@ -40,7 +44,7 @@ function initials(name) {
 const ASSIGNEE_COLORS = {
   uiuxAdmin:  'bg-ink-700',
   jsmith:     'bg-sage-600',
-  adavis:     'bg-flame-500',
+  adavis:     'bg-amber-600',
   mrodriguez: 'bg-amber-500',
 }
 
@@ -56,7 +60,7 @@ const PAGE_SIZE = 10
 const MOCK_HISTORY = [
   { id: 1, icon: FileCheck,    label: 'Account Created',  date: '03/05/2026', color: 'text-sage-500',  bg: 'bg-sage-50'  },
   { id: 2, icon: RefreshCw,    label: 'Quote Issued',     date: '03/06/2026', color: 'text-ink-500',   bg: 'bg-ink-50'   },
-  { id: 3, icon: CheckCircle2, label: 'Policy Bound',     date: '03/07/2026', color: 'text-flame-500', bg: 'bg-flame-50' },
+  { id: 3, icon: CheckCircle2, label: 'Policy Bound',     date: '03/07/2026', color: 'text-sage-600', bg: 'bg-sage-50' },
   { id: 4, icon: Clock,        label: 'Renewal Started',  date: '03/08/2026', color: 'text-amber-500', bg: 'bg-amber-50' },
 ]
 
@@ -108,8 +112,8 @@ function buildKpis(subs) {
       label: 'New This Month',
       value: 8,
       icon:  TrendingUp,
-      bg:    'bg-flame-50',
-      color: 'text-flame-600',
+      bg:    'bg-ink-50',
+      color: 'text-ink-600',
       sub:   'March 2026',
       delta: '+3 vs Feb',
       alert: false,
@@ -153,7 +157,7 @@ function AccountSlideOver({ account, onClose, navigate }) {
       {/* Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/30 z-40"
+          className="fixed inset-0 bg-stone-900/30 z-40"
           onClick={onClose}
         />
       )}
@@ -420,7 +424,7 @@ function NewAccountModal({ open, onClose, onCreated }) {
   ].join(' ')
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-stone-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]">
 
         {/* Header */}
@@ -432,6 +436,7 @@ function NewAccountModal({ open, onClose, onCreated }) {
           <button
             onClick={handleClose}
             disabled={loading}
+            aria-label="Close dialog"
             className="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors disabled:opacity-40"
           >
             <X className="h-4 w-4" />
@@ -576,15 +581,9 @@ function NewAccountModal({ open, onClose, onCreated }) {
           >
             Cancel
           </button>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={loading}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-flame-500 hover:bg-flame-600 rounded-lg disabled:opacity-60 transition-colors"
-          >
-            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+          <Button variant="cta" size="md" loading={loading} onClick={handleSubmit}>
             {loading ? 'Creating…' : 'Create Account'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -596,6 +595,7 @@ function NewAccountModal({ open, onClose, onCreated }) {
 export default function AccountsPage() {
   const navigate = useNavigate()
   const toast    = useToast()
+  const isLoading = useSimulatedLoading()
 
   // Prepend newly created rows on top of base data
   const [extraRows, setExtraRows] = useState([])
@@ -608,9 +608,6 @@ export default function AccountsPage() {
   const [lobFilter,       setLobFilter]       = useState('All')
   const [assigneeFilter,  setAssigneeFilter]  = useState('All')
   const [showExpiring,    setShowExpiring]    = useState(false)
-
-  // ── Pagination ────────────────────────────────────────────────────────────
-  const [page, setPage] = useState(1)
 
   // ── SlideOver ─────────────────────────────────────────────────────────────
   const [slideAccount, setSlideAccount] = useState(null)
@@ -668,11 +665,8 @@ export default function AccountsPage() {
     return data
   }, [allRows, search, statusFilter, lobFilter, assigneeFilter, assigneeOverrides, showExpiring])
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
-  const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-
   function handleFilterChange(setter) {
-    return (e) => { setter(e.target.value); setPage(1) }
+    return (e) => { setter(e.target.value) }
   }
 
   // ── Inline assignee handlers ──────────────────────────────────────────────
@@ -726,6 +720,15 @@ export default function AccountsPage() {
 
   // ─────────────────────────────────────────────────────────────────────────
 
+  if (isLoading) {
+    return (
+      <div className="max-w-[1400px] mx-auto space-y-5">
+        <SkeletonCardRow count={4} />
+        <SkeletonTable rows={8} cols={7} />
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-[1400px] mx-auto">
 
@@ -739,7 +742,7 @@ export default function AccountsPage() {
           </p>
           <div className="flex items-center gap-2 shrink-0">
             <button
-              onClick={() => { setShowExpiring(true); setPage(1) }}
+              onClick={() => setShowExpiring(true)}
               className="text-xs font-semibold text-amber-700 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-2.5 py-1 rounded-md transition-colors"
             >
               View Expiring
@@ -762,7 +765,7 @@ export default function AccountsPage() {
             <CalendarClock className="h-3.5 w-3.5" />
             Showing expiring accounts only
             <button
-              onClick={() => { setShowExpiring(false); setPage(1) }}
+              onClick={() => setShowExpiring(false)}
               className="ml-1 text-amber-600 hover:text-amber-800"
               aria-label="Clear filter"
             >
@@ -832,7 +835,7 @@ export default function AccountsPage() {
             <input
               type="text"
               value={search}
-              onChange={e => { setSearch(e.target.value); setPage(1) }}
+              onChange={e => setSearch(e.target.value)}
               placeholder="Search accounts, agencies…"
               className="w-full pl-9 pr-4 py-1.5 text-sm border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-ink-400 focus:border-ink-400 placeholder:text-stone-400 bg-stone-25"
             />
@@ -885,184 +888,136 @@ export default function AccountsPage() {
 
       {/* ── Accounts Table ──────────────────────────────────────────────────── */}
       <div className="bg-white rounded-xl border border-stone-200 shadow-card overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-stone-100 bg-stone-25">
+        <div className="px-5 py-3.5 border-b border-stone-100 bg-stone-25 flex items-center justify-between">
           <h2 className="text-sm font-bold text-stone-800">All Accounts</h2>
+          <span className="text-xs font-semibold text-stone-400 bg-stone-100 px-2.5 py-1 rounded-full">
+            {filtered.length} accounts
+          </span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-stone-100 text-sm">
-            <thead className="bg-stone-25">
-              <tr>
-                <th className="px-4 py-3 text-left text-[10px] font-bold text-stone-400 uppercase tracking-widest w-8" />
-                <th className="px-4 py-3 text-left text-[10px] font-bold text-stone-400 uppercase tracking-widest">Account</th>
-                <th className="px-4 py-3 text-left text-[10px] font-bold text-stone-400 uppercase tracking-widest">Agency · Agent</th>
-                <th className="px-4 py-3 text-left text-[10px] font-bold text-stone-400 uppercase tracking-widest">LOB</th>
-                <th className="px-4 py-3 text-left text-[10px] font-bold text-stone-400 uppercase tracking-widest">Status</th>
-                <th className="px-4 py-3 text-left text-[10px] font-bold text-stone-400 uppercase tracking-widest">Eff Date</th>
-                <th className="px-4 py-3 text-left text-[10px] font-bold text-stone-400 uppercase tracking-widest">Assignee</th>
-                <th className="px-4 py-3 text-right text-[10px] font-bold text-stone-400 uppercase tracking-widest">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-100 bg-white">
-              {paginated.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="text-center py-16">
-                    <div className="flex flex-col items-center gap-2">
-                      <Users className="h-8 w-8 text-stone-200" />
-                      <p className="text-sm text-stone-400 font-medium">No accounts match your filters</p>
-                      <p className="text-xs text-stone-300">Try adjusting your search or filter criteria</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : paginated.map((row, i) => {
-                const effAssignee       = assigneeOverrides.get(row.id) || row.assignee
-                const isEditingAssignee = editingAssigneeId === row.id
+        <Table
+          columns={[
+            {
+              key: '_avatar',
+              header: '',
+              render: (_, row) => (
+                <div className={`w-8 h-8 rounded-full ${avatarColor(row.insuredName)} text-white text-[11px] font-bold flex items-center justify-center shrink-0 shadow-sm`}>
+                  {initials(row.insuredName)}
+                </div>
+              ),
+            },
+            {
+              key: 'insuredName',
+              header: 'Account',
+              sortable: true,
+              render: (val, row) => (
+                <div>
+                  <p className="text-xs font-bold text-stone-800 group-hover:text-ink-700 transition-colors">{val}</p>
+                  {row.dba && row.dba !== val && <p className="text-[10px] text-stone-400 mt-0.5">DBA: {row.dba}</p>}
+                  <p className="text-[10px] font-mono text-stone-300 mt-0.5">{row.submissionNumber}</p>
+                </div>
+              ),
+            },
+            {
+              key: 'agencyName',
+              header: 'Agency · Agent',
+              sortable: true,
+              render: (val, row) => (
+                <div className="max-w-[180px]">
+                  <p className="text-xs text-stone-600 truncate">{val}</p>
+                  <p className="text-[10px] text-stone-400 mt-0.5 truncate">{row.agentName}</p>
+                </div>
+              ),
+            },
+            {
+              key: '_lob',
+              header: 'LOB',
+              render: () => (
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-ink-50 text-ink-700 border border-ink-100">
+                  GL
+                </span>
+              ),
+            },
+            {
+              key: 'status',
+              header: 'Status',
+              sortable: true,
+              render: (val) => <StatusBadge status={val} />,
+            },
+            {
+              key: 'effectiveDate',
+              header: 'Eff Date',
+              sortable: true,
+              render: (val) => <span className="text-xs font-mono text-stone-500">{val || '—'}</span>,
+            },
+            {
+              key: 'assignee',
+              header: 'Assignee',
+              sortable: true,
+              render: (_, row) => {
+                const effAssignee = assigneeOverrides.get(row.id) || row.assignee
+                const isEditing = editingAssigneeId === row.id
                 return (
-                  <tr
-                    key={row.id}
-                    onClick={() => setSlideAccount(row)}
-                    className={[
-                      'cursor-pointer transition-colors duration-100 hover:bg-ink-25 group',
-                      i % 2 === 1 ? 'bg-stone-25/40' : '',
-                    ].join(' ')}
-                  >
-                    {/* Avatar */}
-                    <td className="pl-4 pr-2 py-3 whitespace-nowrap">
-                      <div className={`w-8 h-8 rounded-full ${avatarColor(row.insuredName)} text-white text-[11px] font-bold flex items-center justify-center shrink-0 shadow-sm`}>
-                        {initials(row.insuredName)}
-                      </div>
-                    </td>
-
-                    {/* Account */}
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <p className="text-xs font-bold text-stone-800 group-hover:text-ink-700 transition-colors">
-                        {row.insuredName}
-                      </p>
-                      {row.dba && row.dba !== row.insuredName && (
-                        <p className="text-[10px] text-stone-400 mt-0.5">DBA: {row.dba}</p>
-                      )}
-                      <p className="text-[10px] font-mono text-stone-300 mt-0.5">{row.submissionNumber}</p>
-                    </td>
-
-                    {/* Agency · Agent */}
-                    <td className="px-4 py-3 whitespace-nowrap max-w-[180px]">
-                      <p className="text-xs text-stone-600 truncate">{row.agencyName}</p>
-                      <p className="text-[10px] text-stone-400 mt-0.5 truncate">{row.agentName}</p>
-                    </td>
-
-                    {/* LOB badge */}
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-ink-50 text-ink-700 border border-ink-100">
-                        GL
-                      </span>
-                    </td>
-
-                    {/* Status */}
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <StatusBadge status={row.status} />
-                    </td>
-
-                    {/* Effective Date */}
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="text-xs font-mono text-stone-500">{row.effectiveDate || '—'}</span>
-                    </td>
-
-                    {/* Assignee — inline edit */}
-                    <td
-                      className="px-4 py-3 whitespace-nowrap"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      {isEditingAssignee ? (
-                        <select
-                          ref={assigneeSelectRef}
-                          defaultValue={effAssignee}
-                          onBlur={e => commitAssignee(row.id, e.target.value)}
-                          onKeyDown={e => {
-                            if (e.key === 'Enter')  commitAssignee(row.id, e.target.value)
-                            if (e.key === 'Escape') setEditingAssigneeId(null)
-                          }}
-                          onClick={e => e.stopPropagation()}
-                          className="text-xs border border-ink-400 rounded-md px-1.5 py-1 bg-white focus:outline-none ring-2 ring-ink-200"
-                        >
-                          {assignees.map(a => <option key={a} value={a}>{a}</option>)}
-                        </select>
-                      ) : (
-                        <button
-                          onClick={e => startEditAssignee(e, row.id)}
-                          title="Click to change assignee"
-                          className="flex items-center gap-1.5 group/assignee"
-                        >
-                          <div className={`w-6 h-6 rounded-full ${assigneeColor(effAssignee)} text-white text-[9px] font-bold flex items-center justify-center shrink-0`}>
-                            {(effAssignee[0] || '?').toUpperCase()}
-                          </div>
-                          <span className="text-xs text-stone-500 group-hover/assignee:text-ink-700 transition-colors">{effAssignee}</span>
-                          <UserCheck className="h-3 w-3 text-stone-300 group-hover/assignee:text-ink-400 transition-colors" />
-                        </button>
-                      )}
-                    </td>
-
-                    {/* Action */}
-                    <td className="px-4 py-3 whitespace-nowrap text-right" onClick={e => e.stopPropagation()}>
-                      <button
-                        onClick={() => navigate(`/submissions/${row.id}`)}
-                        className="px-2.5 py-1 text-[11px] font-semibold text-ink-700 bg-ink-50 border border-ink-100 rounded-md hover:bg-ink-100 hover:border-ink-200 transition-colors"
+                  <div onClick={e => e.stopPropagation()}>
+                    {isEditing ? (
+                      <select
+                        ref={assigneeSelectRef}
+                        defaultValue={effAssignee}
+                        onBlur={e => commitAssignee(row.id, e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') commitAssignee(row.id, e.target.value)
+                          if (e.key === 'Escape') setEditingAssigneeId(null)
+                        }}
+                        onClick={e => e.stopPropagation()}
+                        className="text-xs border border-ink-400 rounded-md px-1.5 py-1 bg-white focus:outline-none ring-2 ring-ink-200"
                       >
-                        View
+                        {assignees.map(a => <option key={a} value={a}>{a}</option>)}
+                      </select>
+                    ) : (
+                      <button
+                        onClick={e => startEditAssignee(e, row.id)}
+                        title="Click to change assignee"
+                        className="flex items-center gap-1.5 group/assignee"
+                      >
+                        <div className={`w-6 h-6 rounded-full ${assigneeColor(effAssignee)} text-white text-[9px] font-bold flex items-center justify-center shrink-0`}>
+                          {(effAssignee[0] || '?').toUpperCase()}
+                        </div>
+                        <span className="text-xs text-stone-500 group-hover/assignee:text-ink-700 transition-colors">{effAssignee}</span>
+                        <UserCheck className="h-3 w-3 text-stone-300 group-hover/assignee:text-ink-400 transition-colors" />
                       </button>
-                    </td>
-                  </tr>
+                    )}
+                  </div>
                 )
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {/* ── Pagination ─────────────────────────────────────────────────────── */}
-        <div className="px-5 py-3.5 border-t border-stone-100 flex items-center justify-between bg-stone-25">
-          <p className="text-xs text-stone-400">
-            Showing{' '}
-            <span className="font-semibold text-stone-600">
-              {filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)}
-            </span>
-            {' '}of{' '}
-            <span className="font-semibold text-stone-600">{filtered.length}</span>
-            {' '}accounts
-          </p>
-          <div className="flex items-center gap-1.5">
-            <button
-              disabled={page === 1}
-              onClick={() => setPage(p => p - 1)}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium border border-stone-200 rounded-lg bg-white text-stone-600 hover:bg-stone-50 disabled:opacity-40 disabled:pointer-events-none transition-colors"
-            >
-              <ChevronLeft className="h-3.5 w-3.5" />
-              Previous
-            </button>
-            <div className="flex items-center gap-0.5">
-              {Array.from({ length: totalPages }, (_, idx) => idx + 1).map(p => (
-                <button
-                  key={p}
-                  onClick={() => setPage(p)}
-                  className={[
-                    'w-7 h-7 text-xs font-medium rounded-md transition-colors',
-                    p === page
-                      ? 'bg-ink-700 text-white'
-                      : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-50',
-                  ].join(' ')}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-            <button
-              disabled={page === totalPages}
-              onClick={() => setPage(p => p + 1)}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium border border-stone-200 rounded-lg bg-white text-stone-600 hover:bg-stone-50 disabled:opacity-40 disabled:pointer-events-none transition-colors"
-            >
-              Next
-              <ChevronRight className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        </div>
+              },
+            },
+            {
+              key: '_action',
+              header: 'Action',
+              render: (_, row) => (
+                <div className="text-right" onClick={e => e.stopPropagation()}>
+                  <button
+                    onClick={() => navigate(`/submissions/${row.id}`)}
+                    className="px-2.5 py-1 text-[11px] font-semibold text-ink-700 bg-ink-50 border border-ink-100 rounded-md hover:bg-ink-100 hover:border-ink-200 transition-colors"
+                  >
+                    View
+                  </button>
+                </div>
+              ),
+            },
+          ]}
+          data={filtered}
+          defaultPageSize={PAGE_SIZE}
+          onRowClick={(row) => setSlideAccount(row)}
+          showControls
+          embedded
+          emptyState={
+            <EmptyState
+              icon={Users}
+              title="No accounts match your filters"
+              description="Try adjusting your search or filter criteria"
+            />
+          }
+        />
       </div>
 
       {/* ── Account SlideOver ─────────────────────────────────────────────────── */}

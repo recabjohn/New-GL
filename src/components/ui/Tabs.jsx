@@ -6,15 +6,15 @@ export function Tabs({ tabs, activeTab, onChange, className = '' }) {
           key={tab.id}
           onClick={() => onChange(tab.id)}
           className={[
-            'px-5 py-3 text-sm font-medium border-b-2 transition-colors duration-150 whitespace-nowrap',
+            'px-5 py-3 text-sm font-medium border-b-2 transition-colors duration-200 whitespace-nowrap',
             activeTab === tab.id
-              ? 'border-flame-500 text-flame-600'
+              ? 'border-ink-600 text-ink-700'
               : 'border-transparent text-stone-500 hover:text-stone-700 hover:border-stone-300',
           ].join(' ')}
         >
           {tab.label}
           {tab.badge != null && (
-            <span className={`ml-2 px-1.5 py-0.5 rounded-full text-xs font-semibold ${activeTab === tab.id ? 'bg-flame-100 text-flame-700' : 'bg-stone-100 text-stone-500'}`}>
+            <span className={`ml-2 px-1.5 py-0.5 rounded-full text-xs font-semibold ${activeTab === tab.id ? 'bg-ink-100 text-ink-700' : 'bg-stone-100 text-stone-500'}`}>
               {tab.badge}
             </span>
           )}
