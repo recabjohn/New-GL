@@ -97,9 +97,9 @@ export default function ContactsTable({ contacts = [], onChange }) {
         actions={<Button variant="secondary" size="xs" icon={Plus} onClick={openAdd}>Add Contact</Button>}
       >
         {contacts.length === 0 ? (
-          <div className="py-8 text-center">
-            <User className="h-8 w-8 text-stone-300 mx-auto mb-2" />
-            <p className="text-sm text-stone-400">No contacts added yet</p>
+          <div className="py-3 text-center">
+            <User className="h-5 w-5 text-stone-300 mx-auto mb-1" />
+            <p className="text-xs text-stone-400">No contacts added yet</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
