@@ -487,21 +487,6 @@ export default function TopBar({ onMenuToggle }) {
 
         <div className="h-4 w-px bg-stone-200 shrink-0" />
 
-        {/* Search — clicking opens command palette */}
-        <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-stone-400 pointer-events-none" />
-          <input
-            type="text"
-            readOnly
-            onClick={() => setSearchOpen(true)}
-            placeholder="Search submissions, policies, accounts..."
-            className="pl-8 pr-14 py-1.5 text-xs border border-stone-200 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-ink-400 focus:border-ink-400 bg-stone-50 placeholder-stone-400 cursor-pointer"
-          />
-          <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center px-1 py-0.5 text-[9px] font-mono text-stone-400 bg-white border border-stone-200 rounded pointer-events-none">
-            ⌘K
-          </kbd>
-        </div>
-
         {/* Right section */}
         <div className="ml-auto flex items-center gap-1">
           {/* Notifications bell */}
