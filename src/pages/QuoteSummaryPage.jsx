@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import {
   ChevronRight, FileText, ExternalLink, Paperclip, MessageSquare,
   CheckCircle2, ShieldCheck, XCircle, Send, Plus, Check, Info, AlertTriangle, Mail, FileCheck2, Printer,
@@ -328,8 +328,7 @@ function IssueModal({ open, onClose, onConfirm, onPreview }) {
 // ---------------------------------------------------------------------------
 // Summary tab
 // ---------------------------------------------------------------------------
-function SummaryTab({ onBind, onIssue, bound, issued, binderDoc, policyDoc, declining, setDeclining, declined, setDeclined, dismissedExpiryBanner, setDismissedExpiryBanner }) {
-  const q = quote
+function SummaryTab({ q, onBind, onIssue, bound, issued, binderDoc, policyDoc, declining, setDeclining, declined, setDeclined, dismissedExpiryBanner, setDismissedExpiryBanner }) {
   const toast = useToast()
   const fileInputRef = useRef(null)
   const [noteOpen, setNoteOpen] = useState(false)
@@ -599,6 +598,32 @@ function SummaryTab({ onBind, onIssue, bound, issued, binderDoc, policyDoc, decl
 
           {/* Premium breakdown */}
           <Card title="Premium Breakdown">
+            {/* Hero row */}
+            <div className="rounded-xl bg-ink-700 text-white px-5 py-4 mb-4 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-ink-300 mb-1">Total Annual Premium</p>
+                <p className="text-3xl font-black font-mono">${q.totalPremium.toFixed(2)}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-ink-300 mb-1">Effective Date</p>
+                <p className="text-base font-semibold font-mono">{q.effectiveDate}</p>
+              </div>
+            </div>
+
+            {/* 3-col stat row */}
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              {[
+                ['Base Premium',  `$${q.basePremium.toFixed(2)}`],
+                ['Taxes & Fees',  `$${(q.certTerrorism + q.totalTaxesFees + q.totalOtherFees).toFixed(2)}`],
+                ['Policy Term',   '12 Months'],
+              ].map(([label, val]) => (
+                <div key={label} className="rounded-lg bg-stone-50 border border-stone-200 px-3 py-2.5 text-center">
+                  <p className="text-[10px] text-stone-400 font-medium mb-0.5">{label}</p>
+                  <p className="text-sm font-bold font-mono text-stone-900">{val}</p>
+                </div>
+              ))}
+            </div>
+
             <PremiumBar items={premiumItems} total={q.totalPremium} />
 
             <div className="mt-5 space-y-2">
@@ -1171,6 +1196,7 @@ function FormsTab() {
 // ---------------------------------------------------------------------------
 export default function QuoteSummaryPage() {
   const navigate      = useNavigate()
+  const location      = useLocation()
   const toast         = useToast()
   const [tab, setTab] = useState('summary')
   const [bound, setBound]         = useState(false)
@@ -1183,7 +1209,16 @@ export default function QuoteSummaryPage() {
   const [issueModalOpen, setIssueModalOpen] = useState(false)
   const [sendModalOpen, setSendModalOpen]   = useState(false)
   const [dismissedExpiryBanner, setDismissedExpiryBanner] = useState(false)
-  const q = quote
+
+  const selectedOption = location.state?.selectedOption
+  const q = selectedOption ? {
+    ...quote,
+    basePremium:    selectedOption.breakdown.basePremium,
+    certTerrorism:  selectedOption.breakdown.taxes,
+    totalTaxesFees: selectedOption.breakdown.policyFee,
+    totalOtherFees: 0,
+    totalPremium:   selectedOption.breakdown.totalPremium,
+  } : quote
 
   const handleBindClick = () => setBindModalOpen(true)
 
@@ -1258,6 +1293,11 @@ export default function QuoteSummaryPage() {
                   {q.id}
                 </span>
                 <StatusBadge status={issued ? 'Issued' : bound ? 'Bound' : declined ? 'Declined' : q.status} />
+                {selectedOption && (
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded ${selectedOption.tagColor === 'sage' ? 'bg-sage-100 text-sage-700' : selectedOption.tagColor === 'amber' ? 'bg-amber-100 text-amber-700' : 'bg-ink-100 text-ink-700'}`}>
+                    {selectedOption.label} — {selectedOption.tag}
+                  </span>
+                )}
                 {issued && (
                   <span className="font-mono text-xs font-bold text-ink-700 bg-ink-100 px-2 py-0.5 rounded">
                     SSIC-GLN02-0014019-26
@@ -1333,6 +1373,7 @@ export default function QuoteSummaryPage() {
       <div>
         {tab === 'summary' && (
           <SummaryTab
+            q={q}
             onBind={handleBindClick}
             onIssue={() => setIssueModalOpen(true)}
             bound={bound}

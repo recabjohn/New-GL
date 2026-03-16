@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Button from '../../ui/Button'
 import ConfirmDialog from '../../ui/ConfirmDialog'
@@ -28,6 +28,11 @@ export default function LOBTab({ onComplete }) {
   
   const [saving, setSaving] = useState(false)
   const [saved, setSaved]   = useState(false)
+
+  // Scroll to top when changing steps
+  useEffect(() => {
+    document.getElementById('main-scroll-area')?.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [step])
 
   const isDirty = !saved && JSON.stringify(data) !== JSON.stringify(glPolicy)
   useBeforeUnload(isDirty, `draft_lob_${id}`, data)

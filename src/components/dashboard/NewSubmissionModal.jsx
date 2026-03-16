@@ -171,27 +171,7 @@ export default function NewSubmissionModal({ open, onClose, onCreated }) {
           />
         </div>
 
-        {/* Lines of Business */}
-        <div>
-          <label className="form-label">Lines of Business</label>
-          <div className="grid grid-cols-4 gap-2 mt-1">
-            {linesOfBiz.map(lob => (
-              <button
-                key={lob}
-                type="button"
-                onClick={() => toggleLOB(lob)}
-                className={[
-                  'px-3 py-2 rounded-lg text-xs font-medium border transition-colors duration-150 text-left',
-                  form.linesOfBusiness.includes(lob)
-                    ? 'bg-ink-800 text-white border-ink-800'
-                    : 'bg-white text-stone-600 border-stone-200 hover:border-ink-400',
-                ].join(' ')}
-              >
-                {lob}
-              </button>
-            ))}
-          </div>
-        </div>
+        
 
         {/* Attachments */}
         <div>

@@ -622,33 +622,6 @@ export default function Step2_RiskCoverage({ data, onChange }) {
           </div>
         )}
       </Card>
-
-      {/* ── Minimum Premium — collapsible ── */}
-      <CollapsibleSection title="Minimum Premium">
-        <div className="pt-4 space-y-1">
-          {showPremOps && (
-            <p className="text-sm text-stone-500 py-1">Premises/Operations Premium To Reach Minimum</p>
-          )}
-          {showProdComp && (
-            <p className="text-sm text-stone-500 py-1">Products/Completed Operations Premium To Reach Minimum</p>
-          )}
-          {showPremOps && showProdComp && (
-            <p className="text-sm text-stone-500 py-1">Special Combined Premium To Reach Minimum</p>
-          )}
-          {showLiquor && (
-            <p className="text-sm text-stone-500 py-1">Liquor Premium To Reach Minimum</p>
-          )}
-          {showOCP && (
-            <p className="text-sm text-stone-500 py-1">Owners and Contractors Premium To Reach Minimum</p>
-          )}
-          {showRailroad && (
-            <p className="text-sm text-stone-500 py-1">Railroad Premium To Reach Minimum</p>
-          )}
-          {/* Always show Policy Premium To Reach Minimum at the bottom */}
-          <p className="text-sm text-stone-700 font-semibold py-1">Policy Premium To Reach Minimum</p>
-        </div>
-      </CollapsibleSection>
-
     </div>
   )
 }

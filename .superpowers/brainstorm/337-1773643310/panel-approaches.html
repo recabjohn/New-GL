@@ -1,0 +1,254 @@
+<h2>Right Panel Discoverability — 3 Approaches</h2>
+<p class="subtitle">Compare your idea (A) against two alternatives. Click an option to select it.</p>
+
+<div class="options">
+
+  <!-- Option A: User's idea - Accordion -->
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Your Idea — Accordion Panel</h3>
+      <p style="margin-bottom:12px">Toggle opens the panel with all 4 section headers collapsed. Click a header to expand its content.</p>
+
+      <!-- Mockup -->
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <!-- Step 1 -->
+        <div style="flex:1">
+          <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">After clicking toggle →</div>
+          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;font-size:12px">
+            <!-- Header row -->
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#fef2f2;border-bottom:1px solid #fecaca">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="width:8px;height:8px;background:#ef4444;border-radius:50%;display:inline-block"></span>
+                <span style="font-weight:700;color:#991b1b;font-size:11px">NEEDS ATTENTION</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:4px">
+                <span style="background:#dc2626;color:#fff;font-size:10px;font-weight:700;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center">4</span>
+                <span style="color:#9ca3af;font-size:11px">▼</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #f3f4f6">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="color:#f59e0b;font-size:12px">📅</span>
+                <span style="font-weight:600;color:#374151;font-size:11px">DUE THIS WEEK</span>
+              </div>
+              <span style="color:#9ca3af;font-size:11px">▼</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #f3f4f6">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="color:#6366f1;font-size:12px">⚡</span>
+                <span style="font-weight:600;color:#374151;font-size:11px">RECENT ACTIVITY</span>
+              </div>
+              <span style="color:#9ca3af;font-size:11px">▼</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="color:#3b82f6;font-size:12px">☑</span>
+                <span style="font-weight:600;color:#374151;font-size:11px">MY TASKS</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:4px">
+                <span style="background:#1e40af;color:#fff;font-size:10px;font-weight:700;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center">4</span>
+                <span style="color:#9ca3af;font-size:11px">▼</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Step 2 -->
+        <div style="flex:1">
+          <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">After clicking a header →</div>
+          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;font-size:12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#fef2f2;border-bottom:1px solid #fecaca">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="width:8px;height:8px;background:#ef4444;border-radius:50%;display:inline-block"></span>
+                <span style="font-weight:700;color:#991b1b;font-size:11px">NEEDS ATTENTION</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:4px">
+                <span style="background:#dc2626;color:#fff;font-size:10px;font-weight:700;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center">4</span>
+                <span style="color:#dc2626;font-size:11px">▲</span>
+              </div>
+            </div>
+            <!-- Expanded content -->
+            <div style="padding:8px 12px;border-bottom:1px solid #fef2f2;background:#fff9f9">
+              <div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:6px">
+                <span style="width:6px;height:6px;background:#ef4444;border-radius:50%;margin-top:3px;flex-shrink:0"></span>
+                <div>
+                  <div style="font-size:11px;font-weight:600;color:#1f2937">Anchor Marine Supply</div>
+                  <div style="font-size:10px;color:#9ca3af">Clearance overdue 2 days</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:6px">
+                <span style="width:6px;height:6px;background:#ef4444;border-radius:50%;margin-top:3px;flex-shrink:0"></span>
+                <div>
+                  <div style="font-size:11px;font-weight:600;color:#1f2937">Westgate Bar &amp; Grill</div>
+                  <div style="font-size:10px;color:#9ca3af">Quote expires in 24 hours</div>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #f3f4f6">
+              <span style="font-weight:600;color:#374151;font-size:11px">DUE THIS WEEK</span>
+              <span style="color:#9ca3af;font-size:11px">▼</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px">
+              <span style="font-weight:600;color:#374151;font-size:11px">MY TASKS</span>
+              <span style="color:#9ca3af;font-size:11px">▼</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;display:flex;gap:16px">
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;color:#16a34a;margin-bottom:2px">✓ Pros</div>
+          <ul style="font-size:11px;color:#374151;margin:0;padding-left:16px;line-height:1.7">
+            <li>Shows all 4 sections by name on first open</li>
+            <li>Users choose what to expand — less overwhelm</li>
+            <li>Counts &amp; urgency visible in headers</li>
+          </ul>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;color:#dc2626;margin-bottom:2px">✗ Cons</div>
+          <ul style="font-size:11px;color:#374151;margin:0;padding-left:16px;line-height:1.7">
+            <li>2 clicks to reach content (toggle → header)</li>
+            <li>More interaction complexity to build</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option B: Default open + localStorage -->
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Default Open (First Visit)</h3>
+      <p style="margin-bottom:12px">Panel is open by default for new users. Once they close it, their preference is saved (localStorage) and it stays closed on future visits.</p>
+
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="flex:1">
+          <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:6px">First-time user sees →</div>
+          <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;padding:10px;font-size:11px">
+            <div style="display:flex;gap:8px">
+              <div style="flex:1;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:8px;min-height:80px">
+                <div style="font-weight:700;color:#374151;margin-bottom:6px;font-size:10px">SUBMISSIONS TABLE</div>
+                <div style="height:8px;background:#f3f4f6;border-radius:3px;margin-bottom:4px"></div>
+                <div style="height:8px;background:#f3f4f6;border-radius:3px;margin-bottom:4px;width:80%"></div>
+                <div style="height:8px;background:#f3f4f6;border-radius:3px;width:90%"></div>
+              </div>
+              <div style="width:100px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden">
+                <div style="padding:6px 8px;background:#fef2f2;border-bottom:1px solid #fecaca">
+                  <div style="font-size:9px;font-weight:700;color:#991b1b">NEEDS ATTENTION</div>
+                </div>
+                <div style="padding:4px 8px;border-bottom:1px solid #f3f4f6">
+                  <div style="font-size:9px;font-weight:600;color:#1f2937">DUE THIS WEEK</div>
+                </div>
+                <div style="padding:4px 8px;border-bottom:1px solid #f3f4f6">
+                  <div style="font-size:9px;font-weight:600;color:#1f2937">RECENT ACTIVITY</div>
+                </div>
+                <div style="padding:4px 8px">
+                  <div style="font-size:9px;font-weight:600;color:#1f2937">MY TASKS</div>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top:8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:6px 8px;font-size:10px;color:#1e40af">
+              💡 <strong>Panel is open by default.</strong> Click ⊠ to collapse and save your preference.
+            </div>
+          </div>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:6px">Returning user →</div>
+          <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:10px;font-size:11px">
+            <div style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:8px;min-height:80px">
+              <div style="font-weight:700;color:#374151;margin-bottom:6px;font-size:10px">SUBMISSIONS TABLE (full width)</div>
+              <div style="height:8px;background:#f3f4f6;border-radius:3px;margin-bottom:4px"></div>
+              <div style="height:8px;background:#f3f4f6;border-radius:3px;margin-bottom:4px;width:80%"></div>
+              <div style="height:8px;background:#f3f4f6;border-radius:3px;width:90%"></div>
+            </div>
+            <div style="margin-top:8px;font-size:10px;color:#9ca3af;text-align:center">Panel hidden (user preference saved)</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;display:flex;gap:16px">
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;color:#16a34a;margin-bottom:2px">✓ Pros</div>
+          <ul style="font-size:11px;color:#374151;margin:0;padding-left:16px;line-height:1.7">
+            <li>Zero extra clicks — panel immediately visible</li>
+            <li>Simplest to build (just change default state)</li>
+            <li>Respects user preference after first visit</li>
+          </ul>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;color:#dc2626;margin-bottom:2px">✗ Cons</div>
+          <ul style="font-size:11px;color:#374151;margin:0;padding-left:16px;line-height:1.7">
+            <li>Panel doesn't re-open on new sessions (localStorage persists close)</li>
+            <li>Still relies on icon button for returning users</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option C: Labeled toggle button -->
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Labeled Toggle Button with Live Counts</h3>
+      <p style="margin-bottom:12px">Replace the icon-only button with a small labeled button that shows live counts even when the panel is closed. Always communicates the value before clicking.</p>
+
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="flex:1">
+          <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:6px">Button when panel is closed →</div>
+          <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:12px">
+            <!-- Header bar mockup -->
+            <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px">
+              <div style="display:flex;align-items:center;gap:4px;padding:5px 10px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;cursor:pointer">
+                <span style="font-size:11px;font-weight:600;color:#374151">Alerts</span>
+                <span style="background:#dc2626;color:#fff;font-size:9px;font-weight:700;border-radius:9px;padding:1px 5px">4</span>
+                <span style="font-size:10px">▶</span>
+              </div>
+              <div style="padding:5px 12px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;font-size:11px;font-weight:600;color:#374151">Export</div>
+              <div style="padding:5px 14px;background:#e85d26;border-radius:8px;font-size:11px;font-weight:700;color:#fff">+ New Submission</div>
+            </div>
+            <div style="margin-top:8px;font-size:10px;color:#9ca3af;text-align:center">User sees "Alerts 4" and knows exactly what clicking will show</div>
+          </div>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:6px">Button when panel is open →</div>
+          <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:12px">
+            <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px">
+              <div style="display:flex;align-items:center;gap:4px;padding:5px 10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;cursor:pointer">
+                <span style="font-size:11px;font-weight:600;color:#1e40af">Alerts</span>
+                <span style="background:#dc2626;color:#fff;font-size:9px;font-weight:700;border-radius:9px;padding:1px 5px">4</span>
+                <span style="font-size:10px">◀</span>
+              </div>
+              <div style="padding:5px 12px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;font-size:11px;font-weight:600;color:#374151">Export</div>
+              <div style="padding:5px 14px;background:#e85d26;border-radius:8px;font-size:11px;font-weight:700;color:#fff">+ New Submission</div>
+            </div>
+            <div style="margin-top:8px;font-size:10px;color:#9ca3af;text-align:center">Button stays visible, active state shows panel is open</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;display:flex;gap:16px">
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;color:#16a34a;margin-bottom:2px">✓ Pros</div>
+          <ul style="font-size:11px;color:#374151;margin:0;padding-left:16px;line-height:1.7">
+            <li>Always communicates value (4 alerts visible even when closed)</li>
+            <li>Works permanently, not just first visit</li>
+            <li>One click to open — no extra steps</li>
+          </ul>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;color:#dc2626;margin-bottom:2px">✗ Cons</div>
+          <ul style="font-size:11px;color:#374151;margin:0;padding-left:16px;line-height:1.7">
+            <li>"Alerts" label only hints at one of the 4 sections</li>
+            <li>Doesn't surface My Tasks, Due This Week, Activity</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px">My recommendation: <strong>A (your idea)</strong> is the most informative on first open, and combining it with <strong>C</strong>'s live alert count on the toggle button would make it even stronger. But the right call depends on how often your users will toggle the panel.</p>

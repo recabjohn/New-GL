@@ -1,5 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
-import { Component } from 'react'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { Component, useEffect } from 'react'
 import { useAuth } from './context/AuthContext'
 import Layout from './components/layout/Layout'
 import LoginPage            from './pages/LoginPage'
@@ -62,12 +62,27 @@ function ProtectedRoute({ children }) {
   return children
 }
 
+// ---------------------------------------------------------------------------
+// Scroll To Top component
+// ---------------------------------------------------------------------------
+function ScrollToTop() {
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    document.getElementById('main-scroll-area')?.scrollTo(0, 0)
+  }, [pathname])
+
+  return null
+}
+
 export default function App() {
   const { isAuthenticated } = useAuth()
 
   return (
     <ErrorBoundary>
-    <Routes>
+      <ScrollToTop />
+      <Routes>
       {/* Public route — no sidebar / topbar */}
       <Route
         path="/login"

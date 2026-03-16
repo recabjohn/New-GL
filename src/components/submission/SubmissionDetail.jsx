@@ -234,7 +234,7 @@ function LifecycleTimeline({ submissionId }) {
     <div className="rounded-xl border border-stone-200 bg-white overflow-hidden shadow-card">
       <div className="px-4 py-3 border-b border-stone-100">
         <span className="text-xs font-bold text-stone-500 uppercase tracking-widest">
-          GL Lifecycle
+          Progress
         </span>
       </div>
       <div className="p-4">
@@ -347,7 +347,7 @@ export default function SubmissionDetail() {
 
   const changeTab = t => {
     setSearchParams({ tab: t })
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    document.getElementById('main-scroll-area')?.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (

@@ -26,7 +26,7 @@ export default function Layout({ children }) {
 
   // Scroll to top on route change
   useEffect(() => {
-    window.scrollTo({ top: 0 })
+    document.getElementById('main-scroll-area')?.scrollTo({ top: 0 })
   }, [pathname])
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export default function Layout({ children }) {
         <Sidebar mobileOpen={mobileNavOpen} onMobileClose={() => setMobileNavOpen(false)} />
         <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
           <TopBar onMenuToggle={() => setMobileNavOpen(v => !v)} />
-          <main className="flex-1 overflow-y-auto p-6">
+          <main id="main-scroll-area" className="flex-1 overflow-y-auto p-6">
             {children}
           </main>
         </div>

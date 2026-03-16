@@ -331,6 +331,58 @@ export const ratingWorksheet = {
 }
 
 // ---------------------------------------------------------------------------
+// RATING OPTIONS  (two quote scenarios for comparative display)
+// ---------------------------------------------------------------------------
+export const ratingOptions = [
+  {
+    id: 'opt-a',
+    label: 'Option A',
+    tag: 'Standard',
+    tagColor: 'ink',          // ink-100 bg, ink-700 text
+    recommended: false,
+    limits: { eachOccurrence: '$100,000', generalAggregate: '$200,000', deductible: '$1,000' },
+    coverageFeatures: [
+      'Premises/Operations coverage included',
+      'Products/Completed Operations included',
+      'Personal & Advertising Injury covered',
+      'Medical payments: $5,000 per person',
+      '24/7 claims support',
+    ],
+    breakdown: {
+      basePremium: 386.00,
+      taxes: 58.00,
+      policyFee: 42.00,
+      totalPremium: 486.00,
+      estCommission: 48.25,
+    },
+  },
+  {
+    id: 'opt-b',
+    label: 'Option B',
+    tag: 'Enhanced',
+    tagColor: 'sage',         // sage-100 bg, sage-700 text
+    recommended: true,
+    limits: { eachOccurrence: '$500,000', generalAggregate: '$1,000,000', deductible: '$500' },
+    coverageFeatures: [
+      'Premises/Operations coverage included',
+      'Products/Completed Operations included',
+      'Personal & Advertising Injury covered',
+      'Medical payments: $10,000 per person',
+      '24/7 claims support',
+      'Higher occurrence & aggregate limits',
+      'Umbrella-eligible coverage',
+    ],
+    breakdown: {
+      basePremium: 612.00,
+      taxes: 92.00,
+      policyFee: 42.00,
+      totalPremium: 746.00,
+      estCommission: 76.50,
+    },
+  },
+]
+
+// ---------------------------------------------------------------------------
 // QUOTE
 // ---------------------------------------------------------------------------
 export const quote = {

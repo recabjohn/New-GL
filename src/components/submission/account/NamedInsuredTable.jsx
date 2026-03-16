@@ -9,8 +9,7 @@ import { useToast } from '../../ui/Toast'
 import { Plus, Trash2, Pencil, Building2 } from 'lucide-react'
 
 const entityTypes = ['Association','Corporation','C Corporation','S Corporation','Individual','Joint Venture','Limited Liability Company','Limited Liability Partnership','Limited Partnership','Nonprofit Corporation','Partnership','Sole Proprietor','Other']
-const relationships = ['Subsidiary', 'Parent Company', 'Affiliate', 'Joint Venture', 'Additional Named Insured', 'Other']
-const EMPTY_FORM = { name: '', dba: '', fullAddress: '', entityType: '', relationship: '' }
+const EMPTY_FORM = { name: '', dba: '', fullAddress: '', entityType: '' }
 
 function InsuredAvatar({ name }) {
   const initials = name ? name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) : 'IN'
@@ -44,7 +43,7 @@ export default function NamedInsuredTable({ insureds = [], onChange }) {
 
   const openEdit = ins => {
     setEditId(ins.id)
-    setForm({ name: ins.name, dba: ins.dba, fullAddress: ins.fullAddress || '', entityType: ins.entityType || '', relationship: ins.relationship })
+    setForm({ name: ins.name, dba: ins.dba, fullAddress: ins.fullAddress || '', entityType: ins.entityType || '' })
     setErrors({})
     setOpen(true)
   }
@@ -157,7 +156,6 @@ export default function NamedInsuredTable({ insureds = [], onChange }) {
           <Input label="Legal Entity Name / DBA"  value={form.dba}  onChange={e => set('dba', e.target.value)} />
           <Input label="Full Address" value={form.fullAddress} onChange={e => set('fullAddress', e.target.value)} placeholder="Full mailing address" />
           <Select label="Entity Type" options={entityTypes} value={form.entityType} onChange={v => set('entityType', v)} />
-          <Select label="Relationship" options={relationships} value={form.relationship} onChange={v => set('relationship', v)} />
         </div>
       </Modal>
 

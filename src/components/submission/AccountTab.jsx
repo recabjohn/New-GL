@@ -103,7 +103,6 @@ export default function AccountTab() {
           {saved ? '✓ Changes saved' : 'Unsaved changes'}
         </p>
         <div className="flex items-center gap-3">
-          <Button variant="secondary" icon={Save} loading={saving} onClick={handleSave}>Save</Button>
           <Button variant="cta" icon={ArrowRight} onClick={handleNext}>Save &amp; Next</Button>
         </div>
       </div>

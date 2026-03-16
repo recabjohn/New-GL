@@ -780,8 +780,8 @@ export default function Step3_Locations({ data, onChange }) {
           {editingClassId ? 'Edit Details' : existingClasses.length > 0 ? 'Add New Classification' : 'Classification Details'}
         </p>
 
-        {/* Row 1: Class # + Code + Description */}
-        <div className="grid gap-4 mb-4" style={{ gridTemplateColumns: '80px 1fr 1fr' }}>
+        {/* Row 1: Class # + Code */}
+        <div className="grid gap-4 mb-4" style={{ gridTemplateColumns: '80px 1fr' }}>
           <div>
             <label className="form-label">Class #</label>
             <div className="px-2 py-2 text-sm font-mono font-bold text-ink-700 bg-ink-50 border border-ink-200 rounded-lg text-center">
@@ -791,12 +791,19 @@ export default function Step3_Locations({ data, onChange }) {
             </div>
           </div>
           <div>
-            <Input label="Class Code" required value={classForm.classCode} onChange={e => handleClassCodeChange(e.target.value)} placeholder="e.g. 18078" />
+            <Select
+              label="Class Code"
+              required
+              searchable
+              options={Object.entries(GL_CLASS_CODES).map(([code, desc]) => ({
+                value: code,
+                label: `${code} - ${desc}`,
+              }))}
+              value={classForm.classCode}
+              onChange={handleClassCodeChange}
+              placeholder="Search by code or description..."
+            />
             {classCodeKnown && <AutoFillHint>Known ISO GL code</AutoFillHint>}
-          </div>
-          <div>
-            <Input label="Class Description" value={classForm.classDescription} onChange={e => setCF('classDescription', e.target.value)} placeholder="e.g. Antique Stores" />
-            {classCodeKnown && <AutoFillHint>Auto-filled — you may edit</AutoFillHint>}
           </div>
         </div>
 
