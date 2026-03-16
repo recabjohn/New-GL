@@ -71,6 +71,7 @@ export default function Dashboard() {
   const [activeStage, setStage] = useState(null)
   const [, forceUpdate]         = useState(0)
   const [rightPanelOpen, setRightPanelOpen] = useState(false)
+  const [expandedSections, setExpandedSections] = useState(new Set())
   const [kpisExpanded, setKpisExpanded]     = useState(true)
 
   // ── Bulk Action state ──
@@ -136,6 +137,14 @@ export default function Dashboard() {
     setNewTaskNote('')
     setTaskFormErrors({})
     setAddTaskOpen(false)
+  }
+
+  const toggleSection = (id) => {
+    setExpandedSections(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
   }
 
   const TASK_TYPES = ['Follow-up', 'Document Request', 'Review', 'Call', 'Other']
@@ -315,12 +324,26 @@ export default function Dashboard() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setRightPanelOpen(v => !v)}
-            title={rightPanelOpen ? 'Hide side panel' : 'Show side panel'}
+            onClick={() => {
+              const opening = !rightPanelOpen
+              setRightPanelOpen(v => !v)
+              setExpandedSections(opening && visibleAttention.length > 0 ? new Set(['attention']) : new Set())
+            }}
             aria-label={rightPanelOpen ? 'Hide side panel' : 'Show side panel'}
-            className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+            className={[
+              'flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-lg border transition-colors',
+              rightPanelOpen
+                ? 'bg-ink-50 border-ink-300 text-ink-700'
+                : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50',
+            ].join(' ')}
           >
-            {rightPanelOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
+            {rightPanelOpen ? <PanelRightClose className="h-3.5 w-3.5" /> : <PanelRightOpen className="h-3.5 w-3.5" />}
+            Side Panel
+            {visibleAttention.length > 0 && (
+              <span className="bg-crimson-600 text-white text-[9px] font-bold rounded-full px-1.5 py-px leading-none">
+                {visibleAttention.length}
+              </span>
+            )}
           </button>
           <button
             onClick={() => setExportModalOpen(true)}
@@ -518,13 +541,23 @@ export default function Dashboard() {
 
           {/* Needs Attention */}
           <div className="bg-white rounded-xl border border-stone-200 shadow-card overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-crimson-100 bg-crimson-50">
+            <button
+              onClick={() => toggleSection('attention')}
+              className="w-full flex items-center gap-2 px-4 py-2.5 border-b border-crimson-100 bg-crimson-50 hover:bg-crimson-100 transition-colors"
+            >
               <AlertCircle className="h-3.5 w-3.5 text-crimson-600 shrink-0" />
               <h3 className="text-[11px] font-bold text-crimson-800 uppercase tracking-wide">Needs Attention</h3>
-              <span className="ml-auto text-[10px] font-bold text-white bg-crimson-600 w-4 h-4 rounded-full flex items-center justify-center shrink-0">
-                {visibleAttention.length}
-              </span>
-            </div>
+              {visibleAttention.length > 0 && (
+                <span className="text-[10px] font-bold text-white bg-crimson-600 w-4 h-4 rounded-full flex items-center justify-center shrink-0">
+                  {visibleAttention.length}
+                </span>
+              )}
+              {expandedSections.has('attention')
+                ? <ChevronUp className="h-3.5 w-3.5 text-stone-400 shrink-0 ml-auto" />
+                : <ChevronDown className="h-3.5 w-3.5 text-stone-400 shrink-0 ml-auto" />
+              }
+            </button>
+            {expandedSections.has('attention') && (
             <div className="divide-y divide-stone-50">
               {visibleAttention.length === 0 ? (
                 <p className="px-4 py-4 text-xs text-stone-400 text-center">No alerts at this time.</p>
@@ -565,14 +598,23 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
+            )}
           </div>
 
           {/* Due This Week */}
           <div className="bg-white rounded-xl border border-stone-200 shadow-card overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-stone-100">
+            <button
+              onClick={() => toggleSection('due')}
+              className="w-full flex items-center gap-2 px-4 py-2.5 border-b border-stone-100 hover:bg-stone-50 transition-colors"
+            >
               <CalendarCheck className="h-3.5 w-3.5 text-amber-500 shrink-0" />
               <h3 className="text-[11px] font-bold text-stone-700 uppercase tracking-wide">Due This Week</h3>
-            </div>
+              {expandedSections.has('due')
+                ? <ChevronUp className="h-3.5 w-3.5 text-stone-400 shrink-0 ml-auto" />
+                : <ChevronDown className="h-3.5 w-3.5 text-stone-400 shrink-0 ml-auto" />
+              }
+            </button>
+            {expandedSections.has('due') && (
             <div className="px-3 py-1.5 space-y-0.5">
               {submissions.filter(s => s.priority === 'HIGH').slice(0, 4).map(s => (
                 <button
@@ -589,14 +631,23 @@ export default function Dashboard() {
                 </button>
               ))}
             </div>
+            )}
           </div>
 
           {/* Recent Activity */}
           <div className="bg-white rounded-xl border border-stone-200 shadow-card overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-stone-100">
+            <button
+              onClick={() => toggleSection('activity')}
+              className="w-full flex items-center gap-2 px-4 py-2.5 border-b border-stone-100 hover:bg-stone-50 transition-colors"
+            >
               <Activity className="h-3.5 w-3.5 text-ink-500 shrink-0" />
               <h3 className="text-[11px] font-bold text-stone-700 uppercase tracking-wide">Recent Activity</h3>
-            </div>
+              {expandedSections.has('activity')
+                ? <ChevronUp className="h-3.5 w-3.5 text-stone-400 shrink-0 ml-auto" />
+                : <ChevronDown className="h-3.5 w-3.5 text-stone-400 shrink-0 ml-auto" />
+              }
+            </button>
+            {expandedSections.has('activity') && (
             <div className="divide-y divide-stone-50">
               {ACTIVITY.map((a, i) => {
                 const snId = getSnFromSub(a.sub)
@@ -627,20 +678,30 @@ export default function Dashboard() {
                 )
               })}
             </div>
+            )}
           </div>
 
           {/* My Tasks */}
           <div className="bg-white rounded-xl border border-stone-200 shadow-card overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-stone-100">
+            <button
+              onClick={() => toggleSection('tasks')}
+              className="w-full flex items-center gap-2 px-4 py-2.5 border-b border-stone-100 hover:bg-stone-50 transition-colors"
+            >
               <ListTodo className="h-3.5 w-3.5 text-ink-500 shrink-0" />
               <h3 className="text-[11px] font-bold text-stone-700 uppercase tracking-wide">My Tasks</h3>
               {tasks.length > 0 && (
-                <span className="ml-auto text-[10px] font-bold text-white bg-ink-600 w-4 h-4 rounded-full flex items-center justify-center shrink-0">
+                <span className="text-[10px] font-bold text-white bg-ink-600 w-4 h-4 rounded-full flex items-center justify-center shrink-0">
                   {tasks.length}
                 </span>
               )}
-            </div>
+              {expandedSections.has('tasks')
+                ? <ChevronUp className="h-3.5 w-3.5 text-stone-400 shrink-0 ml-auto" />
+                : <ChevronDown className="h-3.5 w-3.5 text-stone-400 shrink-0 ml-auto" />
+              }
+            </button>
 
+            {expandedSections.has('tasks') && (
+            <>
             <div className="divide-y divide-stone-50">
               {tasks.length === 0 ? (
                 <p className="px-4 py-4 text-xs text-stone-400 text-center">No tasks remaining.</p>
@@ -696,6 +757,8 @@ export default function Dashboard() {
                 Add Task
               </button>
             </div>
+            </>
+            )}
           </div>
 
         </div>
